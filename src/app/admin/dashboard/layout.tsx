@@ -13,7 +13,7 @@ export default async function AdminLayout({ children }: PropsWithChildren) {
         <div className="flex flex-1">
           <AppSidebar user={session?.user} />
           <SidebarInset>
-            <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+            <div className="flex flex-1 flex-col gap-4 lg:p-4">{children}</div>
           </SidebarInset>
         </div>
       </SidebarProvider>

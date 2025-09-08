@@ -56,7 +56,7 @@ export default function LoginPage() {
 
       if (!res?.error) {
         toast.success("Login realizado com sucesso!", {
-          icon: <CheckCircle2 className="text-green-500" />,
+          icon: <CheckCircle2 className="mr-2 size-4 text-green-500" />,
         });
         router.push("/dashboard");
         router.refresh(); // Força a atualização da sessão no layout
@@ -83,7 +83,7 @@ export default function LoginPage() {
 
       if (!res?.error) {
         toast.success("Login de administrador realizado com sucesso!", {
-          icon: <CheckCircle2 className="text-green-500" />,
+          icon: <CheckCircle2 className="mr-2 size-4 text-green-500" />,
         });
         router.push("/admin/dashboard");
         router.refresh(); // Força a atualização da sessão no layout

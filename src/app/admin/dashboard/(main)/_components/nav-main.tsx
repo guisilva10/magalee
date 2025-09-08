@@ -32,17 +32,17 @@ export function NavMain({ items }: NavItemProps) {
       <SidebarGroupLabel>Navegação</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
-          const isActive =
-            item.url === "/"
-              ? pathname === item.url
-              : pathname.startsWith(item.url);
+          const isActive = pathname === item.url;
 
           return (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                className={cn(isActive && "bg-primary text-accent-foreground")}
+                className={cn(
+                  isActive &&
+                    "bg-primary hover:bg-primary/80 text-white hover:text-white",
+                )}
               >
                 <Link href={item.url}>
                   <item.icon className="size-4 shrink-0" />

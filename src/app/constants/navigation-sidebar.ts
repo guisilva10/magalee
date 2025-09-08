@@ -11,23 +11,23 @@ export const data = {
   navMain: [
     {
       title: "Visão Geral",
-      url: "#",
+      url: "/admin/dashboard",
       icon: ChartColumnBigIcon,
       isActive: true,
     },
     {
       title: "Pacientes",
-      url: "#",
+      url: "/admin/dashboard/patients",
       icon: Users2Icon,
     },
     {
-      title: "Analytics",
-      url: "#",
+      title: "Analises",
+      url: "/admin/dashboard/analytics",
       icon: TrendingUpIcon,
     },
     {
       title: "Categorias",
-      url: "#",
+      url: "/admin/dashboard/category",
       icon: Settings,
     },
   ],

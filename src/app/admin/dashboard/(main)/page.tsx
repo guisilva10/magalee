@@ -57,9 +57,9 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8 p-4 lg:p-6">
       {/* Header */}
-      <div className="space-y-2">
+      <div className="space-y-2 p-2">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
           Visão geral dos pacientes e registros nutricionais
