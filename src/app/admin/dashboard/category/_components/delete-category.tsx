@@ -36,7 +36,8 @@ export function DeleteCategoryAlert({
             <span className="font-bold text-red-600">
               refeições registradas
             </span>{" "}
-            na categoria "{categoryName}" serão permanentemente excluídas.
+            na categoria &quot;{categoryName}&quot; serão permanentemente
+            excluídas.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
