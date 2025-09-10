@@ -24,7 +24,6 @@ type AppSidebarProps = {
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
   return (
     <Sidebar
-      collapsible="icon"
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
       {...props}
     >
