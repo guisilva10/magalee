@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Local: /app/_lib/google-sheets-service.ts
+"use server";
 
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
@@ -8,6 +7,7 @@ import { toDate } from "date-fns-tz";
 
 // --- TIPOS DE DADOS (Interfaces) ---
 export interface Meal {
+  userId?: string;
   patientName: string;
   Meal_description: string;
   Calories: number;
@@ -66,14 +66,13 @@ export async function getDashboardData(): Promise<DashboardData> {
       mealsSheet.getRows(),
     ]);
 
-    // --- 1. Processar dados dos Pacientes ---
-    // CORREÇÃO 2: Usar os nomes exatos das colunas da sua planilha "Profile"
     const allPatients: Patient[] = patientRows.map((row) => ({
       userId: row.get("User_ID"),
       name: row.get("Name"),
       calories: parseFloat(row.get("Calories_target")),
       protein: parseFloat(row.get("Protein_target")),
     }));
+
     const totalPatients = allPatients.length;
     const patientIdToNameMap = new Map(
       allPatients.map((p) => [p.userId, p.name]),
@@ -87,6 +86,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         patientIdToNameMap.get(patientId) || "Paciente Desconhecido";
 
       return {
+        userId: patientId,
         patientName: patientName,
         Meal_description: row.get("Meal_description"),
         Calories: parseFloat(row.get("Calories")),
@@ -129,6 +129,71 @@ export async function getDashboardData(): Promise<DashboardData> {
       recentMeals: [],
       error:
         "Falha ao carregar dados da planilha. Verifique a configuração e o console do servidor.",
+    };
+  }
+}
+
+export async function getPatientStats(userId: string) {
+  try {
+    const doc = await getAuthenticatedDoc();
+    const mealsSheet = doc.sheetsByTitle["Meals"];
+
+    if (!mealsSheet) {
+      throw new Error("Planilha 'Meals' não foi encontrada.");
+    }
+
+    const rows = await mealsSheet.getRows();
+
+    // 1. Filtra todas as refeições para pegar apenas as do paciente selecionado
+    const patientMealRows = rows.filter((row) => row.get("User_ID") === userId);
+
+    if (patientMealRows.length === 0) {
+      return {
+        success: true,
+        stats: {
+          totalMeals: 0,
+          totalCalories: 0,
+          avgCaloriesPerMeal: 0,
+          recentMeals: [],
+        },
+      };
+    }
+
+    // 2. Mapeia as linhas para objetos estruturados e ordena por data
+    const patientMeals = patientMealRows
+      .map((row) => ({
+        description: row.get("Meal_description") as string,
+        calories: parseFloat(row.get("Calories")),
+        date: new Date(row.get("Date")),
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    // 3. Calcula as estatísticas
+    const totalMeals = patientMeals.length;
+    const totalCalories = patientMeals.reduce(
+      (sum, meal) => sum + meal.calories,
+      0,
+    );
+    const avgCaloriesPerMeal = totalMeals > 0 ? totalCalories / totalMeals : 0;
+    const recentMeals = patientMeals.slice(0, 5); // Pega as 5 mais recentes
+
+    return {
+      success: true,
+      stats: {
+        totalMeals,
+        totalCalories,
+        avgCaloriesPerMeal: Math.round(avgCaloriesPerMeal),
+        recentMeals: recentMeals.map((meal) => ({
+          ...meal,
+          date: meal.date.toISOString(), // Serializa a data para o cliente
+        })),
+      },
+    };
+  } catch (error) {
+    console.error("Erro ao buscar estatísticas do paciente:", error);
+    return {
+      success: false,
+      error: "Não foi possível carregar as estatísticas do paciente.",
     };
   }
 }

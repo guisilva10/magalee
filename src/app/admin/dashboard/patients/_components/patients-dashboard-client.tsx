@@ -10,15 +10,10 @@ import {
   CardTitle,
 } from "@/app/_components/ui/card";
 import { Button } from "@/app/_components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/app/_components/ui/dialog";
-import { User, Users, FileText, Pencil, Target, Flame } from "lucide-react";
+import { Users, FileText, Pencil } from "lucide-react";
 import { DashboardData, Patient } from "@/server/sheet-data/get-sheet-all-data";
+import { PatientReportDialog } from "./patient-dialog";
+import { EditPatientSheet } from "./edit-patient-sheet";
 
 interface PatientsDashboardProps {
   patients: DashboardData;
@@ -29,12 +24,20 @@ export default function PatientsDashboard({
 }: PatientsDashboardProps) {
   const patients = dashboardData?.patients || [];
 
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null);
 
   const handleViewReport = (patient: Patient) => {
     setSelectedPatient(patient);
     setIsDialogOpen(true);
+  };
+
+  const handleEdit = (patient: Patient) => {
+    setPatientToEdit(patient);
+    setIsSheetOpen(true);
   };
 
   return (
@@ -73,7 +76,7 @@ export default function PatientsDashboard({
                     <div>
                       <CardTitle className="text-lg">{patient.name}</CardTitle>
                       <CardDescription className="text-xs">
-                        ID: {patient.userId}
+                        ID: {patient.userId.split("@")[0]}
                       </CardDescription>
                     </div>
                   </div>
@@ -96,10 +99,10 @@ export default function PatientsDashboard({
                 </CardContent>
                 <CardFooter className="flex gap-2">
                   <Button onClick={() => handleViewReport(patient)}>
-                    <FileText className="size-4" /> Ver Relatório
+                    <FileText className="mr-2 size-4" /> Ver Relatório
                   </Button>
-                  <Button variant="outline">
-                    <Pencil className="size-4" /> Editar
+                  <Button variant="outline" onClick={() => handleEdit(patient)}>
+                    <Pencil className="mr-2 size-4" /> Editar
                   </Button>
                 </CardFooter>
               </Card>
@@ -107,52 +110,17 @@ export default function PatientsDashboard({
         </div>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          {selectedPatient && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-xl">
-                  Relatório de {selectedPatient.name}
-                </DialogTitle>
-                <DialogDescription>
-                  Detalhes e metas nutricionais do paciente.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="flex items-center gap-4">
-                  <User className="h-5 w-5 text-gray-500" />
-                  <p>
-                    <span className="font-semibold">Nome:</span>{" "}
-                    {selectedPatient.name}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Flame className="h-5 w-5 text-gray-500" />
-                  <p>
-                    <span className="font-semibold">Meta de Calorias:</span>{" "}
-                    {selectedPatient.calories.toLocaleString("pt-BR")} kcal
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Target className="h-5 w-5 text-gray-500" />
-                  <p>
-                    <span className="font-semibold">Meta de Proteína:</span>{" "}
-                    {selectedPatient.protein}g
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <FileText className="h-5 w-5 text-gray-500" />
-                  <p className="break-all">
-                    <span className="font-semibold">User ID:</span>{" "}
-                    {selectedPatient.userId.split("@")[0]}
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <PatientReportDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        patient={selectedPatient}
+      />
+
+      <EditPatientSheet
+        isOpen={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+        patient={patientToEdit}
+      />
     </main>
   );
 }
