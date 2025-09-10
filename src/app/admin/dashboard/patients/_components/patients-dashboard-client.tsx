@@ -9,11 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/_components/ui/card";
-import { Button } from "@/app/_components/ui/button";
+import { Button, buttonVariants } from "@/app/_components/ui/button";
 import { Users, FileText, Pencil } from "lucide-react";
 import { DashboardData, Patient } from "@/server/sheet-data/get-sheet-all-data";
 import { PatientReportDialog } from "./patient-dialog";
 import { EditPatientSheet } from "./edit-patient-sheet";
+import Link from "next/link";
 
 interface PatientsDashboardProps {
   patients: DashboardData;
@@ -98,9 +99,12 @@ export default function PatientsDashboard({
                   </div>
                 </CardContent>
                 <CardFooter className="flex gap-2">
-                  <Button onClick={() => handleViewReport(patient)}>
+                  <Link
+                    href={`/admin/dashboard/patients/${encodeURIComponent(patient.userId)}`}
+                    className={buttonVariants({ variant: "default" })}
+                  >
                     <FileText className="mr-2 size-4" /> Ver Relatório
-                  </Button>
+                  </Link>
                   <Button variant="outline" onClick={() => handleEdit(patient)}>
                     <Pencil className="mr-2 size-4" /> Editar
                   </Button>
