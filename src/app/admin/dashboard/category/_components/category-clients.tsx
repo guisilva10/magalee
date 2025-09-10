@@ -1,7 +1,11 @@
 "use client";
 
 import { Button } from "@/app/_components/ui/button";
+import { deleteCategory } from "@/server/sheet-data/get-category";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { DeleteCategoryAlert } from "./delete-category";
+import { EditCategoryDialog } from "./edit-category";
 
 interface MealItem {
   patientName: string;
@@ -16,12 +20,38 @@ interface CategoryData {
 }
 
 export function MealCategoriesClient({ data }: { data: CategoryData[] }) {
+  const [isPending, startTransition] = useTransition();
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+
+  // Estado para o diálogo de edição
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<string | null>(null);
   const descriptions: { [key: string]: string } = {
     "Café da manhã": "Primeira refeição do dia",
     Almoço: "Refeição principal",
     Lanche: "Refeição leve entre as principais",
     Jantar: "Última refeição do dia",
     "Outras Refeições": "Refeições não classificadas",
+  };
+
+  const handleEditClick = (categoryName: string) => {
+    setCategoryToEdit(categoryName);
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteClick = (categoryName: string) => {
+    setCategoryToDelete(categoryName);
+    setIsAlertOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!categoryToDelete) return;
+    startTransition(async () => {
+      await deleteCategory(categoryToDelete);
+      setIsAlertOpen(false);
+      setCategoryToDelete(null);
+    });
   };
 
   return (
@@ -101,14 +131,16 @@ export function MealCategoriesClient({ data }: { data: CategoryData[] }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                      className="..."
+                      onClick={() => handleEditClick(category.categoryName)}
                     >
                       <Pencil className="h-5 w-5" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 text-red-500 hover:bg-red-50 hover:text-red-700"
+                      className="..."
+                      onClick={() => handleDeleteClick(category.categoryName)}
                     >
                       <Trash2 className="h-5 w-5" />
                     </Button>
@@ -119,6 +151,19 @@ export function MealCategoriesClient({ data }: { data: CategoryData[] }) {
           </div>
         )}
       </div>
+      <DeleteCategoryAlert
+        isOpen={isAlertOpen}
+        onOpenChange={setIsAlertOpen}
+        categoryName={categoryToDelete}
+        onConfirm={confirmDelete}
+        isPending={isPending}
+      />
+
+      <EditCategoryDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        categoryName={categoryToEdit}
+      />
     </main>
   );
 }
