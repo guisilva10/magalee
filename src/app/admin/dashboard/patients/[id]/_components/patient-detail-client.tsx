@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { Button } from "@/app/_components/ui/button";
+import { Button, buttonVariants } from "@/app/_components/ui/button";
 import { Calendar } from "@/app/_components/ui/calendar";
 import {
   Card,
@@ -40,6 +40,8 @@ import {
 } from "@/app/_components/ui/table";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/app/_components/ui/badge";
+import Link from "next/link";
+import { SendMonthlyReport } from "./send-report";
 
 interface PatientDetailClientProps {
   patient: Patient;
@@ -114,17 +116,33 @@ export function PatientDetailClient({
   }, [allMeals]);
 
   return (
-    <main className="flex-1 p-6">
-      <div>
-        <h1 className="relative mb-2 text-3xl font-bold text-gray-800">
-          Relatório de {patient.name}
-          <Badge className="absolute top-0 ml-2" variant={dietStatus.variant}>
-            {dietStatus.text}
-          </Badge>
-        </h1>
-        <p className="mb-8 text-gray-500">
-          Análise detalhada de consumo e macronutrientes.
-        </p>
+    <main className="max-w-screen flex-1 px-4 py-6">
+      <div className="mb-6 flex items-center justify-between border-b">
+        <div className="mb-8 flex flex-col">
+          <h1 className="mb-2 text-3xl font-bold text-gray-800">
+            Relatório de {patient.name}
+          </h1>
+          <div className="flex flex-col">
+            <p className="text-gray-500">
+              Análise detalhada de consumo e macronutrientes.
+            </p>
+            <Badge variant={dietStatus.variant}>{dietStatus.text}</Badge>
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-4 lg:flex-row">
+          <SendMonthlyReport
+            patient={patient}
+            last30DaysData={chartData}
+            dietStatus={dietStatus}
+          />
+          <Link
+            href="/admin/dashboard/patients"
+            className={buttonVariants({ variant: "outline" })}
+          >
+            <ChevronLeft />
+            Voltar
+          </Link>
+        </div>
       </div>
 
       <Card className="mb-8">
