@@ -17,32 +17,32 @@ const FaqSectionHome = () => {
             Perguntas frequentes
           </h2>
           <p className="text-muted-foreground text-lg">
-            Tudo que você precisa saber sobre o NutriAI
+            Tudo que você precisa saber sobre a Magalee
           </p>
         </div>
 
         <div className="mx-auto max-w-3xl space-y-4">
           {[
             {
-              question: "Como funciona o NutriAI?",
+              question: "Como funciona a Magalee?",
               answer:
-                "O NutriAI revoluciona a maneira de monitorar a ingestão calórica diária, utilizando Inteligência Artificial integrada ao WhatsApp. Basta enviar uma foto do seu prato ou usar áudios descrevendo sua refeição, que a IA processará e adicionará automaticamente ao seu registro diário.",
+                "A Magalee revoluciona a maneira de monitorar a ingestão calórica diária, utilizando Inteligência Artificial integrada ao WhatsApp. Basta enviar uma foto do seu prato ou usar áudios descrevendo sua refeição, que a IA processará e adicionará automaticamente ao seu registro diário.",
             },
             {
-              question: "Para quem é o NutriAI?",
+              question: "Para quem é a Magalee?",
               answer:
                 "Para pessoas que desejam compreender facilmente quantas calorias consomem diariamente e controlar seu peso. Ideal para quem não tem tempo para usar aplicativos tradicionais e quer criar o hábito de forma prática.",
             },
             {
               question:
-                "Como o NutriAI calcula o peso dos alimentos através de fotos?",
+                "Como a Magalee calcula o peso dos alimentos através de fotos?",
               answer:
                 "Utilizamos tecnologia avançada de inteligência artificial treinada para reconhecer e analisar diferentes tipos de alimentos, proporcionando uma estimativa precisa do peso. Para precisão absoluta, oferecemos a opção de inserção manual.",
             },
             {
-              question: "O NutriAI oferece planos de dieta personalizados?",
+              question: "A Magalee oferece planos de dieta personalizados?",
               answer:
-                "O NutriAI é especializado na contagem e monitoramento de calorias e macronutrientes. Recomendamos consultar profissionais de nutrição para planos personalizados. Nosso objetivo é fornecer ferramentas que complementem uma rotina saudável.",
+                "A Magalee é especializado na contagem e monitoramento de calorias e macronutrientes. Recomendamos consultar profissionais de nutrição para planos personalizados. Nosso objetivo é fornecer ferramentas que complementem uma rotina saudável.",
             },
             {
               question: "Como funciona o cancelamento?",

@@ -22,10 +22,10 @@ const HeaderHome = () => {
 
   return (
     <nav
-      className={`bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky z-50 flex w-full items-center justify-between px-8 py-4 backdrop-blur transition-all duration-400 ease-in-out lg:mx-auto ${
+      className={`supports-[backdrop-filter]:bg-background/60 bg-background/90 sticky z-50 mx-auto flex w-full items-center justify-between px-8 py-4 backdrop-blur transition-all duration-400 ease-in-out ${
         isScrolled
-          ? "top-4 h-16 w-full max-w-2xl rounded-full border shadow-lg lg:max-w-4xl"
-          : "top-4 h-18 max-w-full rounded-none border-b"
+          ? "top-4 mx-4 h-16 max-w-4xl rounded-full border shadow-lg"
+          : "top-4 h-18 max-w-full rounded-none"
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

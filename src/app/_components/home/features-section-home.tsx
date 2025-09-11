@@ -37,7 +37,7 @@ const FeaturesSectionHome = () => {
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Activity className="text-primary h-6 w-6" />
@@ -53,7 +53,7 @@ const FeaturesSectionHome = () => {
             </CardHeader>
           </Card>
 
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <TrendingUp className="text-primary h-6 w-6" />
@@ -69,10 +69,10 @@ const FeaturesSectionHome = () => {
             </CardHeader>
           </Card>
 
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10">
-                <Heart className="h-6 w-6 text-blue-500" />
+              <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
+                <Heart className="text-primary h-6 w-6" />
               </div>
               <CardTitle className="text-card-foreground">
                 Consumo de água
@@ -84,7 +84,7 @@ const FeaturesSectionHome = () => {
             </CardHeader>
           </Card>
 
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Target className="text-primary h-6 w-6" />
@@ -99,7 +99,7 @@ const FeaturesSectionHome = () => {
             </CardHeader>
           </Card>
 
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Brain className="text-primary h-6 w-6" />
@@ -114,7 +114,7 @@ const FeaturesSectionHome = () => {
             </CardHeader>
           </Card>
 
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <ChefHat className="text-primary h-6 w-6" />
@@ -129,7 +129,7 @@ const FeaturesSectionHome = () => {
             </CardHeader>
           </Card>
 
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <BarChart3 className="text-primary h-6 w-6" />
@@ -142,10 +142,10 @@ const FeaturesSectionHome = () => {
             </CardHeader>
           </Card>
 
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10">
-                <Apple className="h-6 w-6 text-green-500" />
+              <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
+                <Apple className="text-primary h-6 w-6" />
               </div>
               <CardTitle className="text-card-foreground">
                 Receba avaliações
@@ -157,7 +157,7 @@ const FeaturesSectionHome = () => {
             </CardHeader>
           </Card>
 
-          <Card className="bg-card border-border transition-shadow hover:shadow-lg">
+          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Clock className="text-primary h-6 w-6" />

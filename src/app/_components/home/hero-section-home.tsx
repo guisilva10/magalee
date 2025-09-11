@@ -9,7 +9,7 @@ const HeroSectionHome = () => {
       id="home"
       className="relative overflow-hidden px-4 py-32 sm:px-6 lg:px-8"
     >
-      <div className="from-primary/5 via-background to-primary/10 absolute inset-0 bg-gradient-to-br"></div>
+      <div className="from-primary/20 via-background to-primary/10 absolute inset-0 bg-gradient-to-br"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_50%)]"></div>
       <div className="relative z-10 container mx-auto text-center">
         <div className="mx-auto max-w-5xl">
@@ -17,18 +17,18 @@ const HeroSectionHome = () => {
             Conheça MAGALEE - Sua Nutricionista IA
           </Badge>
           <h1 className="text-foreground mb-8 text-5xl leading-tight font-bold text-balance md:text-7xl">
-            Transforme sua
+            Transforme sua{" "}
             <span className="from-primary to-primary/70 bg-gradient-to-r bg-clip-text text-transparent">
-              {" "}
               alimentação{" "}
             </span>
             com inteligência artificial
           </h1>
           <p className="text-muted-foreground mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-pretty md:text-2xl">
             MAGALEE é sua nutricionista IA que entende fotos, áudios e textos
-            das suas refeições. Receba análises nutricionais instantâneas, dicas
-            personalizadas e acompanhe seu progresso através do WhatsApp e
-            dashboard inteligente.
+            das suas refeições. Com ela você recebe análises nutricionais
+            instantâneas, dicas personalizadas e acompanhamento do seu progresso
+            através do WhatsApp e de uma plataforma dashboard inteligente, que
+            pode ser acompanhada pelo seu médico ou nutricionista.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button

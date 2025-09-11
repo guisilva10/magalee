@@ -1,6 +1,9 @@
+"use client";
+
 import { ArrowRight, Camera, Mic } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 const AboutAISectionHome = () => {
   return (
@@ -25,7 +28,11 @@ const AboutAISectionHome = () => {
             <Card className="bg-card border-border">
               <CardContent className="p-6">
                 <div className="bg-muted mb-4 flex h-48 items-center justify-center rounded-lg">
-                  <Camera className="text-muted-foreground h-12 w-12" />
+                  <DotLottieReact
+                    src="https://lottie.host/ab172cf3-6f40-49be-ad07-05c04c8c33c1/jZJA05S3eq.lottie"
+                    loop
+                    autoplay
+                  />
                 </div>
                 <p className="text-muted-foreground text-center">
                   Envie uma foto da sua refeição
@@ -40,7 +47,11 @@ const AboutAISectionHome = () => {
             <Card className="bg-card border-border">
               <CardContent className="p-6">
                 <div className="bg-muted mb-4 flex h-48 items-center justify-center rounded-lg">
-                  <Mic className="text-muted-foreground h-12 w-12" />
+                  <DotLottieReact
+                    src="https://lottie.host/404ea325-5cd1-48f9-a086-6576bc5aabe4/VGVrcDOSxp.lottie"
+                    loop
+                    autoplay
+                  />
                 </div>
                 <p className="text-muted-foreground text-center">
                   Grave um áudio descrevendo sua refeição
