@@ -13,13 +13,14 @@ import {
 } from "lucide-react";
 
 // Componentes do Shadcn UI
-import { Button } from "@/app/_components/ui/button";
+import { Button, buttonVariants } from "@/app/_components/ui/button";
 import { Input } from "@/app/_components/ui/input";
 import { Label } from "@/app/_components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/app/_components/ui/card";
@@ -29,6 +30,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/app/_components/ui/tabs";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function LoginPage() {
   // Estados para os inputs dos dois formulários
@@ -94,100 +97,127 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-muted/40 flex min-h-screen w-full items-center justify-center p-4">
-      <Tabs defaultValue="patient" className="w-full max-w-md">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold tracking-tight">
-              Acesse sua conta
-            </CardTitle>
-            <CardDescription>
-              Selecione seu tipo de acesso para continuar.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* O componente TabsList cria os botões de seleção */}
-            <TabsList className="mb-6 grid w-full grid-cols-2">
-              <TabsTrigger value="patient">
-                <User className="mr-2 size-4" />
-                Paciente
-              </TabsTrigger>
-              <TabsTrigger value="admin">
-                <ShieldCheck className="mr-2 size-4" />
-                Nutricionista
-              </TabsTrigger>
-            </TabsList>
+    <div className="bg-muted/40 flex h-screen">
+      <div className="flex h-screen w-1/2 items-center justify-center">
+        <Tabs defaultValue="patient" className="w-full max-w-md shadow-2xl">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold tracking-tight">
+                Acesse sua conta
+              </CardTitle>
+              <CardDescription>
+                Selecione seu tipo de acesso para continuar.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TabsList className="mb-6 grid w-full grid-cols-2">
+                <TabsTrigger value="patient">
+                  <User className="mr-2 size-4" />
+                  Paciente
+                </TabsTrigger>
+                <TabsTrigger value="admin">
+                  <ShieldCheck className="mr-2 size-4" />
+                  Nutricionista
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Conteúdo da aba de Paciente */}
-            <TabsContent value="patient">
-              <form onSubmit={handlePatientLogin}>
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Nome</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Digite seu nome completo"
-                      value={patientName}
-                      onChange={(e) => setPatientName(e.target.value)}
-                      required
+              <TabsContent value="patient">
+                <form onSubmit={handlePatientLogin}>
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="name">Nome</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Digite seu nome completo"
+                        value={patientName}
+                        onChange={(e) => setPatientName(e.target.value)}
+                        required
+                        disabled={isPending}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full"
                       disabled={isPending}
-                    />
+                    >
+                      {isPending ? (
+                        <Loader2Icon className="mr-2 size-4 animate-spin" />
+                      ) : (
+                        <LogInIcon className="mr-2 size-4" />
+                      )}
+                      Entrar como Paciente
+                    </Button>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isPending}>
-                    {isPending ? (
-                      <Loader2Icon className="mr-2 size-4 animate-spin" />
-                    ) : (
-                      <LogInIcon className="mr-2 size-4" />
-                    )}
-                    Entrar como Paciente
-                  </Button>
-                </div>
-              </form>
-            </TabsContent>
+                </form>
+              </TabsContent>
 
-            {/* Conteúdo da aba de Admin */}
-            <TabsContent value="admin">
-              <form onSubmit={handleAdminLogin}>
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="magaleenutri@gmail.com"
-                      value={adminEmail}
-                      onChange={(e) => setAdminEmail(e.target.value)}
-                      required
+              <TabsContent value="admin">
+                <form onSubmit={handleAdminLogin}>
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="magaleenutri@gmail.com"
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        required
+                        disabled={isPending}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="password">Senha</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        required
+                        disabled={isPending}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full"
                       disabled={isPending}
-                    />
+                    >
+                      {isPending ? (
+                        <Loader2Icon className="mr-2 size-4 animate-spin" />
+                      ) : (
+                        <LogInIcon className="mr-2 size-4" />
+                      )}
+                      Entrar como Nutricionista
+                    </Button>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="password">Senha</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      required
-                      disabled={isPending}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isPending}>
-                    {isPending ? (
-                      <Loader2Icon className="mr-2 size-4 animate-spin" />
-                    ) : (
-                      <LogInIcon className="mr-2 size-4" />
-                    )}
-                    Entrar como Nutricionista
-                  </Button>
-                </div>
-              </form>
-            </TabsContent>
-          </CardContent>
-        </Card>
-      </Tabs>
+                </form>
+              </TabsContent>
+            </CardContent>
+            <CardFooter className="flex items-center justify-between">
+              <p className="text-muted-foreground text-sm">
+                Ainda não possuí uma conta ?
+              </p>
+              <Link href="" className="hover:text-primary text-sm font-bold">
+                Crie sua conta por aqui
+              </Link>
+            </CardFooter>
+            <Link href="/" className={buttonVariants({ variant: "ghost" })}>
+              Voltar ao início
+            </Link>
+          </Card>
+        </Tabs>
+      </div>
+      <div className="flex h-screen w-1/2 items-center bg-[#00b39b]">
+        <div className="h-auto w-full">
+          <img
+            src="/bg-login.png"
+            alt="Background da tela de Login"
+            className="object-cover"
+          />
+        </div>
+      </div>
     </div>
   );
 }

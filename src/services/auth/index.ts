@@ -4,10 +4,9 @@ import { getPatientData } from "@/app/_lib/google-sheet"; // Sua função para b
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
-    signIn: "/",
-    signOut: "/",
-    error: "/",
-    newUser: "/dashboard",
+    signIn: "/auth",
+    signOut: "/auth",
+    error: "/auth",
   },
   providers: [
     Credentials({

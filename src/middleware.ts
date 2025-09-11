@@ -7,16 +7,20 @@ export function middleware(request: NextRequest) {
   );
   const pathname = request.nextUrl.pathname;
 
-  if (pathname === "/" && token) {
+  if (pathname === "/auth" && token) {
     const redirectUrl = getUrl("/admin/dashboard");
     console.log(`Redirecionando para: ${redirectUrl}`);
     return NextResponse.redirect(new URL(getUrl("/admin/dashboard")));
   }
 
-  if (pathname.includes("/admin/dashboard") && !token) {
-    const redirectUrl = getUrl("/");
+  if (
+    pathname.includes("/dashboard") &&
+    pathname.includes("/admin/dashboard") &&
+    !token
+  ) {
+    const redirectUrl = getUrl("/auth");
     console.log(`Redirecionando para: ${redirectUrl}`);
-    return NextResponse.redirect(new URL(getUrl("/")));
+    return NextResponse.redirect(new URL(getUrl("/auth")));
   }
 }
 

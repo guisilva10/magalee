@@ -122,4 +122,31 @@
 html {
   width: 100%;
   height: 100%;
+  scroll-padding-top: 40px;
+  scroll-behavior: smooth;
+}
+
+@layer utilities {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      #00bba4,
+      #00bba4,
+      #00bba4,
+      #00bba4
+    ); /* Tons de verde intenso */
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(#00bba4, #00bba4, #00bba4, #00bba4);
+  }
 }
