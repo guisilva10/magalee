@@ -97,8 +97,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-muted/40 flex h-screen">
-      <div className="flex h-screen w-1/2 items-center justify-center">
+    <div className="bg-muted/40 flex h-screen w-full flex-col lg:flex-row">
+      <div className="lg:w-1/2text-xs lg: flex h-screen w-full items-center justify-center p-4 lg:p-0">
         <Tabs defaultValue="patient" className="w-full max-w-md shadow-2xl">
           <Card>
             <CardHeader className="text-center">
@@ -196,10 +196,13 @@ export default function LoginPage() {
               </TabsContent>
             </CardContent>
             <CardFooter className="flex items-center justify-between">
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs lg:text-sm">
                 Ainda não possuí uma conta ?
               </p>
-              <Link href="" className="hover:text-primary text-sm font-bold">
+              <Link
+                href=""
+                className="hover:text-primary text-xs font-bold lg:text-sm"
+              >
                 Crie sua conta por aqui
               </Link>
             </CardFooter>
@@ -209,7 +212,7 @@ export default function LoginPage() {
           </Card>
         </Tabs>
       </div>
-      <div className="flex h-screen w-1/2 items-center bg-[#00b39b]">
+      <div className="hidden h-screen w-1/2 items-center bg-[#00b39b] lg:flex">
         <div className="h-auto w-full">
           <img
             src="/bg-login.png"
