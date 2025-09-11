@@ -26,8 +26,8 @@ const TestimonialsSectionHome = () => {
                 ))}
               </div>
               <p className="text-muted-foreground mb-4">
-                "Perdi 8kg em 3 meses usando o NutriAI. A facilidade de
-                registrar pelo WhatsApp mudou minha vida!"
+                &quot;Perdi 8kg em 3 meses usando o NutriAI. A facilidade de
+                registrar pelo WhatsApp mudou minha vida!&quot;
               </p>
               <div className="flex items-center">
                 <div className="bg-primary/10 mr-3 flex h-10 w-10 items-center justify-center rounded-full">
@@ -52,8 +52,8 @@ const TestimonialsSectionHome = () => {
                 ))}
               </div>
               <p className="text-muted-foreground mb-4">
-                "Finalmente consegui ganhar massa muscular de forma saudável. O
-                app é incrível!"
+                &quot;Finalmente consegui ganhar massa muscular de forma
+                saudável. O app é incrível!&quot;
               </p>
               <div className="flex items-center">
                 <div className="bg-primary/10 mr-3 flex h-10 w-10 items-center justify-center rounded-full">
@@ -80,8 +80,8 @@ const TestimonialsSectionHome = () => {
                 ))}
               </div>
               <p className="text-muted-foreground mb-4">
-                "A IA é muito precisa e me ajuda a manter uma alimentação
-                equilibrada todos os dias."
+                &quot;A IA é muito precisa e me ajuda a manter uma alimentação
+                equilibrada todos os dias.&quot;
               </p>
               <div className="flex items-center">
                 <div className="bg-primary/10 mr-3 flex h-10 w-10 items-center justify-center rounded-full">

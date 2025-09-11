@@ -104,9 +104,9 @@ const DashboardSectionHome = () => {
                     Insights da MAGALEE
                   </h4>
                   <p className="text-muted-foreground text-sm">
-                    "Baseado no seu histórico, você consome 15% menos proteína
-                    nos fins de semana. Que tal incluir ovos no café da manhã de
-                    sábado? 🥚"
+                    &quot;Baseado no seu histórico, você consome 15% menos
+                    proteína nos fins de semana. Que tal incluir ovos no café da
+                    manhã de sábado? 🥚&quot;
                   </p>
                 </div>
               </CardContent>
