@@ -109,7 +109,10 @@ const HeaderHome = () => {
                   {/* Logo no Sheet */}
                   <div className="flex items-center space-x-3 border-b pb-6">
                     <div className="from-primary to-primary/80 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg">
-                      <Sparkles className="text-primary-foreground h-5 w-5" />
+                      <img
+                        src="/logo.svg"
+                        className="text-primary-foreground h-5 w-5"
+                      />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-foreground text-xl font-bold">
