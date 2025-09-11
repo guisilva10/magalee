@@ -194,9 +194,9 @@ export default function DashboardClient({ data }: DashboardClientProps) {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500">
-                  <Target className="h-5 w-5 text-white" />
+                  <img src="/logo.svg" className="h-5 w-5 text-white" />
                 </div>
-                <h1 className="text-xl font-bold text-gray-900">NutriDash</h1>
+                <h1 className="text-xl font-bold text-gray-900">Magalee App</h1>
               </div>
               <div className="hidden text-sm text-gray-600 sm:block">
                 Usuário não encontrado
@@ -250,9 +250,9 @@ export default function DashboardClient({ data }: DashboardClientProps) {
             <MobileMenu data={data} />
             <div className="flex items-center space-x-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500">
-                <Target className="h-5 w-5 text-white" />
+                <img src="/logo.svg" className="h-5 w-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">NutriDash</h1>
+              <h1 className="text-xl font-bold text-gray-900">Magalee App</h1>
             </div>
             <div className="hidden text-sm text-gray-600 md:block">
               Olá, {data.name}!

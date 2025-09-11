@@ -79,9 +79,9 @@ const WhatsappSectionHome = () => {
           <div className="relative">
             <Card className="overflow-hidden border-0 bg-white shadow-2xl dark:bg-gray-900">
               <CardContent className="p-0">
-                <div className="flex items-center space-x-3 bg-green-500 p-4">
+                <div className="bg-primary flex items-center space-x-3 p-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white">
-                    <Sparkles className="h-5 w-5 text-green-500" />
+                    <img src="/logo.svg" className="text-primary h-5 w-5" />
                   </div>
                   <div>
                     <p className="font-semibold text-white">MAGALEE</p>
@@ -98,7 +98,7 @@ const WhatsappSectionHome = () => {
                     </div>
                   </div>
                   <div className="flex justify-end">
-                    <div className="max-w-xs rounded-2xl rounded-br-md bg-green-500 p-3">
+                    <div className="bg-primary max-w-xs rounded-2xl rounded-br-md p-3">
                       <p className="text-sm text-white">📸 [Foto do almoço]</p>
                     </div>
                   </div>

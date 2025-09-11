@@ -8,7 +8,10 @@ const FooterHome = () => {
           <div>
             <div className="mb-4 flex items-center space-x-2">
               <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
-                <Brain className="text-primary-foreground h-5 w-5" />
+                <img
+                  src="/logo.svg"
+                  className="text-primary-foreground h-5 w-5"
+                />
               </div>
               <span className="text-foreground text-xl font-bold">
                 Magalee App

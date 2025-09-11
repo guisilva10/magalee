@@ -38,7 +38,8 @@ const HeaderHome = () => {
                 isScrolled ? "h-8 w-8" : "h-10 w-10"
               }`}
             >
-              <Sparkles
+              <img
+                src="/logo.svg"
                 className={`text-primary-foreground transition-all duration-500 ${
                   isScrolled ? "h-4 w-4" : "h-5 w-5"
                 }`}

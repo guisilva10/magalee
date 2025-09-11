@@ -98,7 +98,7 @@ export default function LoginPage() {
 
   return (
     <div className="bg-muted/40 flex h-screen w-full flex-col lg:flex-row">
-      <div className="lg:w-1/2text-xs lg: flex h-screen w-full items-center justify-center p-4 lg:p-0">
+      <div className="flex h-screen w-full items-center justify-center p-4 text-xs lg:w-1/2 lg:p-0">
         <Tabs defaultValue="patient" className="w-full max-w-md shadow-2xl">
           <Card>
             <CardHeader className="text-center">

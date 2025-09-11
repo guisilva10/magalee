@@ -23,7 +23,7 @@ const HeroSectionHome = () => {
             </span>
             com inteligência artificial
           </h1>
-          <p className="text-muted-foreground mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-pretty md:text-2xl">
+          <p className="text-muted-foreground mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-pretty md:text-xl">
             MAGALEE é sua nutricionista IA que entende fotos, áudios e textos
             das suas refeições. Com ela você recebe análises nutricionais
             instantâneas, dicas personalizadas e acompanhamento do seu progresso

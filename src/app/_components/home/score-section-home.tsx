@@ -1,3 +1,4 @@
+import { NumberTicker } from "@/components/magicui/number-ticker";
 import { Card, CardContent } from "../ui/card";
 
 const ScoreSectionHome = () => {
@@ -15,7 +16,9 @@ const ScoreSectionHome = () => {
         <div className="grid gap-6 md:grid-cols-4">
           <Card className="from-primary/5 to-primary/10 border-primary/20 bg-gradient-to-br p-6 text-center">
             <CardContent className="p-0">
-              <div className="text-primary mb-2 text-4xl font-bold">+100k</div>
+              <div className="text-primary mb-2 text-4xl font-bold">
+                +<NumberTicker value={100} className="text-primary" />k
+              </div>
               <p className="text-muted-foreground font-medium">
                 Alimentos reconhecidos
               </p>
@@ -24,7 +27,8 @@ const ScoreSectionHome = () => {
           <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-green-500/10 p-6 text-center">
             <CardContent className="p-0">
               <div className="mb-2 text-4xl font-bold text-green-600">
-                5.2k kg
+                <NumberTicker value={5} className="text-green-600" />
+                .2k kg
               </div>
               <p className="text-muted-foreground font-medium">
                 Perdidos pelos usuários
@@ -33,7 +37,10 @@ const ScoreSectionHome = () => {
           </Card>
           <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-500/10 p-6 text-center">
             <CardContent className="p-0">
-              <div className="mb-2 text-4xl font-bold text-blue-600">25k+</div>
+              <div className="mb-2 text-4xl font-bold text-blue-600">
+                <NumberTicker value={25} className="text-blue-600" />
+                k+
+              </div>
               <p className="text-muted-foreground font-medium">
                 Usuários ativos
               </p>
@@ -41,7 +48,9 @@ const ScoreSectionHome = () => {
           </Card>
           <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-purple-500/10 p-6 text-center">
             <CardContent className="p-0">
-              <div className="mb-2 text-4xl font-bold text-purple-600">98%</div>
+              <div className="mb-2 text-4xl font-bold text-purple-600">
+                <NumberTicker value={98} className="text-purple-600" />%
+              </div>
               <p className="text-muted-foreground font-medium">
                 Satisfação dos usuários
               </p>

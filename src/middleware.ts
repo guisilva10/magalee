@@ -13,11 +13,19 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(getUrl("/admin/dashboard")));
   }
 
-  if (
-    pathname.includes("/dashboard") &&
-    pathname.includes("/admin/dashboard") &&
-    !token
-  ) {
+  if (pathname.includes("/admin/dashboard") && !token) {
+    const redirectUrl = getUrl("/auth");
+    console.log(`Redirecionando para: ${redirectUrl}`);
+    return NextResponse.redirect(new URL(getUrl("/auth")));
+  }
+
+  if (pathname === "/auth" && token) {
+    const redirectUrl = getUrl("/dashboard");
+    console.log(`Redirecionando para: ${redirectUrl}`);
+    return NextResponse.redirect(new URL(getUrl("/dashboard")));
+  }
+
+  if (pathname.includes("/dashboard") && !token) {
     const redirectUrl = getUrl("/auth");
     console.log(`Redirecionando para: ${redirectUrl}`);
     return NextResponse.redirect(new URL(getUrl("/auth")));

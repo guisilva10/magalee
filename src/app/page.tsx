@@ -11,10 +11,11 @@ import FaqSectionHome from "./_components/home/faq-section-home";
 import FooterHome from "./_components/home/footer-home";
 import CtaSectionHome from "./_components/home/cta-section-home";
 import { TestimonialsMarqueeSectionHome } from "./_components/home/testimonials-marquee-section-home";
+import ArcTimelineSectionHome from "./_components/home/arc-timeline-section-home";
 
 export default function NutritionAIWebsite() {
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen">
       <HeaderHome />
 
       <HeroSectionHome />
@@ -26,6 +27,8 @@ export default function NutritionAIWebsite() {
       <DashboardSectionHome />
 
       <AboutAISectionHome />
+
+      <ArcTimelineSectionHome />
 
       <FeaturesSectionHome />
 

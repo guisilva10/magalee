@@ -74,45 +74,6 @@ const AboutAISectionHome = () => {
             </Button>
           </div>
         </div>
-
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <h2 className="text-foreground mb-6 text-3xl font-bold md:text-4xl">
-              Dashboard com dados do Google Sheets
-            </h2>
-            <p className="text-muted-foreground mb-8 text-lg">
-              Todos os dados processados pela MAGALEE são automaticamente salvos
-              no Google Sheets. Visualize gráficos consolidados, acompanhe
-              tendências e solicite relatórios detalhados diretamente pelo
-              WhatsApp.
-            </p>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Assine agora <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-          <div className="relative">
-            <Card className="bg-card border-border">
-              <CardContent className="p-6">
-                <div className="mb-4 text-center">
-                  <div className="text-primary mb-2 text-3xl font-bold">
-                    -350 cal
-                  </div>
-                  <p className="text-muted-foreground">Saldo calórico hoje</p>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Consumidas</span>
-                    <span className="text-foreground">1,650 cal</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Queimadas</span>
-                    <span className="text-foreground">2,000 cal</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
       </div>
     </section>
   );

@@ -4,6 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/_components/ui/card";
+import { BorderBeam } from "@/components/magicui/border-beam";
 import {
   Activity,
   Apple,
@@ -37,7 +38,7 @@ const FeaturesSectionHome = () => {
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Activity className="text-primary h-6 w-6" />
@@ -51,9 +52,10 @@ const FeaturesSectionHome = () => {
                 relógio.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
 
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <TrendingUp className="text-primary h-6 w-6" />
@@ -67,9 +69,10 @@ const FeaturesSectionHome = () => {
                 detalhados.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
 
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Heart className="text-primary h-6 w-6" />
@@ -82,9 +85,10 @@ const FeaturesSectionHome = () => {
                 NutriAI para controlar quantos litros de água você ingeriu.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
 
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Target className="text-primary h-6 w-6" />
@@ -97,9 +101,10 @@ const FeaturesSectionHome = () => {
                 diariamente se está atingindo.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
 
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Brain className="text-primary h-6 w-6" />
@@ -112,9 +117,10 @@ const FeaturesSectionHome = () => {
                 cardápios através da interação com o assistente.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
 
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <ChefHat className="text-primary h-6 w-6" />
@@ -127,9 +133,10 @@ const FeaturesSectionHome = () => {
                 proporcional quando quiser.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
 
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <BarChart3 className="text-primary h-6 w-6" />
@@ -140,9 +147,10 @@ const FeaturesSectionHome = () => {
                 calorias, peso, água e muito mais.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
 
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Apple className="text-primary h-6 w-6" />
@@ -155,9 +163,10 @@ const FeaturesSectionHome = () => {
                 glicêmica ou colesterol de cada alimento registrado.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
 
-          <Card className="bg-card border-border hover:shadow-primary cursor-pointer transition-shadow hover:shadow-md">
+          <Card className="bg-card border-border hover:shadow-primary relative cursor-pointer transition-shadow hover:shadow-xs">
             <CardHeader>
               <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <Clock className="text-primary h-6 w-6" />
@@ -170,6 +179,7 @@ const FeaturesSectionHome = () => {
                 WhatsApp. Lembretes para água, medicamentos, refeições e etc.
               </CardDescription>
             </CardHeader>
+            <BorderBeam duration={8} size={100} />
           </Card>
         </div>
       </div>
