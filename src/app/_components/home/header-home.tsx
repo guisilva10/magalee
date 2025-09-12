@@ -165,7 +165,7 @@ const HeaderHome = () => {
                       Entrar
                     </Link>
                     <Link
-                      href="/auth"
+                      href="/verify-number"
                       className={buttonVariants({
                         variant: "default",
                         className: "w-full justify-center",
