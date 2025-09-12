@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // A função getUrl pode ser movida para um lib para ser usada em outros lugares também
 const getUrl = (path: string) => {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
   return new URL(path, baseUrl).toString();
 };
 
