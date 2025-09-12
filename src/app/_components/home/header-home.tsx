@@ -64,18 +64,21 @@ const HeaderHome = () => {
           {/* Desktop Navigation */}
           <div className="hidden items-center space-x-8 md:flex">
             <a
+              title="Funcionalidades"
               href="#funcionalidades"
               className="text-foreground hover:text-primary font-medium transition-colors"
             >
               Funcionalidades
             </a>
             <a
+              title="Whatsapp"
               href="#whatsapp"
               className="text-foreground hover:text-primary font-medium transition-colors"
             >
               WhatsApp
             </a>
             <a
+              title="Dashboard"
               href="#dashboard"
               className="text-foreground hover:text-primary font-medium transition-colors"
             >
@@ -89,7 +92,7 @@ const HeaderHome = () => {
               Entrar
             </Link>
             <Link
-              href="/auth"
+              href="/verify-number"
               className={buttonVariants({ variant: "default" })}
             >
               Começar Agora

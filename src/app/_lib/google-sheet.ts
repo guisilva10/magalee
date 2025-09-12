@@ -13,13 +13,15 @@ export interface Meal {
 export interface PatientData {
   userId: string;
   name: string;
-  calories: string;
-  protein: string;
+  caloriesTarget: string; // Renomeado para maior clareza
+  proteinTarget: string; // Renomeado para maior clareza
+  email?: string;
+  password?: string;
   meals: Meal[];
 }
 
 export async function getPatientData(
-  name: string,
+  email: string,
 ): Promise<PatientData | null> {
   try {
     const auth = new google.auth.GoogleAuth({
@@ -31,33 +33,32 @@ export async function getPatientData(
     });
 
     const sheets = google.sheets({ version: "v4", auth });
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID; // 1. Fetch user profile data
 
-    // 1. Fetch user profile data
     const profileResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Profile!A2:D",
+      // CORREÇÃO: O range foi estendido para 'A2:F' para incluir as colunas de email e senha.
+      range: "Profile!A2:F",
     });
 
     const profileRows = profileResponse.data.values || [];
-    const userProfile = profileRows.find((row) => row[1] === name);
+    // A busca agora funcionará, pois a coluna 5 (índice 4) está incluída no range.
+    const userProfile = profileRows.find((row) => row[4] === email);
 
     if (!userProfile) {
       console.log("User not found in Profile sheet");
       return null;
     }
 
-    const userId = userProfile[0];
+    const userId = userProfile[0]; // 2. Fetch all meals data
 
-    // 2. Fetch all meals data
     const mealsResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: "Meals!A2:G", // Range includes all meal columns
     });
 
-    const mealRows = mealsResponse.data.values || [];
+    const mealRows = mealsResponse.data.values || []; // 3. Filter meals for the specific user
 
-    // 3. Filter meals for the specific user
     const userMeals: Meal[] = mealRows
       .filter((row) => row[0] === userId) // Filter by User_ID
       .map((row) => ({
@@ -67,14 +68,15 @@ export async function getPatientData(
         carbs: parseInt(row[4], 10) || 0,
         protein: parseInt(row[5], 10) || 0,
         fats: parseInt(row[6], 10) || 0,
-      }));
+      })); // 4. Return combined data
 
-    // 4. Return combined data
     return {
       userId: userProfile[0],
       name: userProfile[1],
-      calories: userProfile[2],
-      protein: userProfile[3],
+      caloriesTarget: userProfile[2], // Renomeado
+      proteinTarget: userProfile[3], // Renomeado
+      email: userProfile[4],
+      password: userProfile[5] || null,
       meals: userMeals,
     };
   } catch (error) {

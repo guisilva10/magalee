@@ -44,8 +44,8 @@ interface Meal {
 interface PatientData {
   userId: string;
   name: string;
-  calories: string;
-  protein: string;
+  caloriesTarget: string;
+  proteinTarget: string;
   meals: Meal[];
 }
 interface DashboardClientProps {
@@ -63,8 +63,8 @@ const getDietStatus = (
   consumedTotals: ConsumedTotals,
   patientData: PatientData,
 ) => {
-  const targetCalories = Number(patientData.calories);
-  const targetProtein = Number(patientData.protein);
+  const targetCalories = Number(patientData.caloriesTarget);
+  const targetProtein = Number(patientData.proteinTarget);
 
   const calorieRatio = consumedTotals.calories / targetCalories;
   const proteinRatio = consumedTotals.protein / targetProtein;
@@ -156,13 +156,13 @@ const ReportDialog = ({
                 <li className="flex justify-between">
                   <span>Calorias:</span>{" "}
                   <span className="font-medium">
-                    {consumedTotals.calories} / {data.calories} kcal
+                    {consumedTotals.calories} / {data.caloriesTarget} kcal
                   </span>
                 </li>
                 <li className="flex justify-between">
                   <span>Proteínas:</span>{" "}
                   <span className="font-medium">
-                    {consumedTotals.protein} / {data.protein} g
+                    {consumedTotals.protein} / {data.proteinTarget} g
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -383,7 +383,7 @@ const ShareDialog = ({
                   <p className="text-lg font-bold text-green-600">
                     {consumedTotals.calories}
                     <span className="text-sm text-gray-500">
-                      /{data.calories} kcal
+                      /{data.caloriesTarget} kcal
                     </span>
                   </p>
                 </div>
@@ -392,7 +392,7 @@ const ShareDialog = ({
                   <p className="text-lg font-bold text-orange-600">
                     {consumedTotals.protein}
                     <span className="text-sm text-gray-500">
-                      /{data.protein} g
+                      /{data.proteinTarget} g
                     </span>
                   </p>
                 </div>
@@ -562,7 +562,11 @@ export default function DashboardClient({ data }: DashboardClientProps) {
           <div className="flex h-16 items-center justify-between px-6">
             <div className="flex items-center space-x-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500">
-                <Utensils className="h-5 w-5 text-white" />
+                <img
+                  src="/logo.svg"
+                  alt="Logo da Magalee"
+                  className="h-5 w-5 text-white"
+                />
               </div>
               <h1 className="text-xl font-bold text-gray-900">Magalee App</h1>
             </div>
@@ -609,7 +613,11 @@ export default function DashboardClient({ data }: DashboardClientProps) {
             />
             <div className="flex items-center space-x-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500">
-                <Utensils className="h-5 w-5 text-white" />
+                <img
+                  src="/logo.svg"
+                  alt="Logo da Magalee"
+                  className="h-5 w-5 text-white"
+                />
               </div>
               <h1 className="text-xl font-bold text-gray-900">Magalee App</h1>
             </div>
@@ -663,7 +671,7 @@ export default function DashboardClient({ data }: DashboardClientProps) {
           <MagaleeMetricCard
             title="Calorias"
             current={consumedTotals.calories}
-            target={Number(data.calories)}
+            target={Number(data.caloriesTarget)}
             unit="kcal"
             color="green"
             icon={Target}
@@ -679,7 +687,7 @@ export default function DashboardClient({ data }: DashboardClientProps) {
           <MagaleeMetricCard
             title="Proteína"
             current={consumedTotals.protein}
-            target={Number(data.protein)}
+            target={Number(data.proteinTarget)}
             unit="g"
             color="orange"
             icon={Zap}

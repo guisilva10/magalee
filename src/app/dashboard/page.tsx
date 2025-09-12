@@ -5,7 +5,7 @@ import { getPatientData } from "../_lib/google-sheet";
 export default async function DashboardPage() {
   const session = await auth();
 
-  if (!session?.user?.name) {
+  if (!session?.user?.email) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p>Redirecionando para login...</p>
@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   }
 
   try {
-    const dashboardData = await getPatientData(session.user.name);
+    const dashboardData = await getPatientData(session.user.email);
 
     return <DashboardClient data={dashboardData} />;
   } catch (error) {

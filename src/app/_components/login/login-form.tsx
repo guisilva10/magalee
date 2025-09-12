@@ -1,8 +1,8 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   CheckCircle2,
@@ -31,28 +31,41 @@ import {
   TabsTrigger,
 } from "@/app/_components/ui/tabs";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function LoginPage() {
-  // Estados para os inputs dos dois formulários
-  const [patientName, setPatientName] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
+  const [patientPassword, setPatientPassword] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  // A lógica das funções de login permanece exatamente a mesma
+  // Efeito para mostrar toast de sucesso após o registro
+  useEffect(() => {
+    if (searchParams.get("registered") === "true") {
+      toast.success(
+        "Cadastro finalizado com sucesso! Agora você pode fazer o login.",
+      );
+      // Limpa a URL para que o toast não apareça novamente ao recarregar a página
+      router.replace("/auth?tab=patient", { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  // --- ALTERAÇÃO 2: Lógica de login do paciente atualizada ---
   async function handlePatientLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!patientName) {
-      toast.error("Por favor, digite seu nome.");
+    if (!patientEmail || !patientPassword) {
+      toast.error("Por favor, preencha e-mail e senha.");
       return;
     }
 
     startTransition(async () => {
       const res = await signIn("credentials", {
-        name: patientName,
+        // Envia email e senha, não mais o nome
+        email: patientEmail,
+        password: patientPassword,
         loginType: "patient",
         redirect: false,
       });
@@ -62,9 +75,9 @@ export default function LoginPage() {
           icon: <CheckCircle2 className="mr-2 size-4 text-green-500" />,
         });
         router.push("/dashboard");
-        router.refresh(); // Força a atualização da sessão no layout
+        router.refresh();
       } else {
-        toast.error(res.error || "Erro ao entrar. Verifique seu nome.");
+        toast.error(res.error || "Erro ao entrar. Verifique suas credenciais.");
       }
     });
   }
@@ -85,21 +98,23 @@ export default function LoginPage() {
       });
 
       if (!res?.error) {
-        toast.success("Login de administrador realizado com sucesso!", {
+        toast.success("Login de nutricionista realizado com sucesso!", {
           icon: <CheckCircle2 className="mr-2 size-4 text-green-500" />,
         });
         router.push("/admin/dashboard");
-        router.refresh(); // Força a atualização da sessão no layout
+        router.refresh();
       } else {
-        toast.error(res.error || "Credenciais de administrador inválidas.");
+        toast.error(res.error || "Credenciais de nutricionista inválidas.");
       }
     });
   }
 
+  const defaultTab = searchParams.get("tab") || "patient";
+
   return (
     <div className="bg-muted/40 flex h-screen w-full flex-col lg:flex-row">
       <div className="flex h-screen w-full items-center justify-center p-4 text-xs lg:w-1/2 lg:p-0">
-        <Tabs defaultValue="patient" className="w-full max-w-md shadow-2xl">
+        <Tabs defaultValue={defaultTab} className="w-full max-w-md shadow-2xl">
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold tracking-tight">
@@ -125,13 +140,25 @@ export default function LoginPage() {
                 <form onSubmit={handlePatientLogin}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="name">Nome</Label>
+                      <Label htmlFor="patient-email">Email</Label>
                       <Input
-                        id="name"
-                        type="text"
-                        placeholder="Digite seu nome completo"
-                        value={patientName}
-                        onChange={(e) => setPatientName(e.target.value)}
+                        id="patient-email"
+                        type="email"
+                        placeholder="seu.email@exemplo.com"
+                        value={patientEmail}
+                        onChange={(e) => setPatientEmail(e.target.value)}
+                        required
+                        disabled={isPending}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="patient-password">Senha</Label>
+                      <Input
+                        id="patient-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={patientPassword}
+                        onChange={(e) => setPatientPassword(e.target.value)}
                         required
                         disabled={isPending}
                       />
@@ -195,17 +222,7 @@ export default function LoginPage() {
                 </form>
               </TabsContent>
             </CardContent>
-            <CardFooter className="flex items-center justify-between">
-              <p className="text-muted-foreground text-xs lg:text-sm">
-                Ainda não possuí uma conta ?
-              </p>
-              <Link
-                href=""
-                className="hover:text-primary text-xs font-bold lg:text-sm"
-              >
-                Crie sua conta por aqui
-              </Link>
-            </CardFooter>
+
             <Link href="/" className={buttonVariants({ variant: "ghost" })}>
               Voltar ao início
             </Link>

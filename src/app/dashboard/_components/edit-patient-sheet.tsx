@@ -20,8 +20,8 @@ import { useSession } from "next-auth/react";
 interface PatientData {
   userId: string;
   name: string;
-  calories: string;
-  protein: string;
+  caloriesTarget: string;
+  proteinTarget: string;
 }
 
 interface SettingsSheetProps {
@@ -36,16 +36,16 @@ export function SettingsSheet({
   data,
 }: SettingsSheetProps) {
   const [name, setName] = useState(data.name);
-  const [calories, setCalories] = useState(data.calories);
-  const [protein, setProtein] = useState(data.protein);
+  const [calories, setCalories] = useState(data.caloriesTarget);
+  const [protein, setProtein] = useState(data.proteinTarget);
 
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (data) {
       setName(data.name);
-      setCalories(data.calories);
-      setProtein(data.protein);
+      setCalories(data.caloriesTarget);
+      setProtein(data.proteinTarget);
     }
   }, [data]);
 
@@ -85,8 +85,6 @@ export function SettingsSheet({
             <Input
               id="name"
               value={name}
-              readOnly
-              className="cursor-not-allowed opacity-50"
               onChange={(e) => setName(e.target.value)}
               disabled={isPending}
             />

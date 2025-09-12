@@ -134,15 +134,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    width: 100%;
+    height: 100%;
+    scroll-padding-top: 40px;
+    font-family: "Poppins", sans-serif;
   }
 }
 
 html {
-  width: 100%;
-  height: 100%;
-  scroll-padding-top: 40px;
+  overflow-y: scroll;
   scroll-behavior: smooth;
-  font-family: "Poppins", sans-serif;
+}
+
+html::-webkit-scrollbar {
+  scroll-behavior: smooth;
 }
 
 @layer utilities {
@@ -156,12 +161,7 @@ html {
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      #00bba4,
-      #00bba4,
-      #00bba4,
-      #00bba4
-    ); /* Tons de verde intenso */
+    background: linear-gradient(#00bba4, #00bba4, #00bba4, #00bba4);
     border-radius: 10px;
   }
 
