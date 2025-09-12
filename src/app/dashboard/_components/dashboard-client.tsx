@@ -31,6 +31,13 @@ import {
   DialogTitle,
 } from "@/app/_components/ui/dialog";
 import { SettingsSheet } from "./edit-patient-sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/app/_components/ui/sheet";
 
 // --- Interfaces ---
 interface Meal {
@@ -348,7 +355,7 @@ const ShareDialog = ({
         onOpenChange(open);
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-w-sm overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Compartilhar Relatório</DialogTitle>
           <DialogDescription>
@@ -455,81 +462,62 @@ const MobileMenu = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleLinkClick = (action: () => void) => {
+    action();
+    setIsOpen(false);
+  };
+
   return (
-    <div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="md:hidden"
-        onClick={() => setIsOpen(true)}
-      >
-        <Menu className="h-5 w-5" />
-      </Button>
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 md:hidden"
-          onClick={() => setIsOpen(false)}
-        >
-          <div
-            className="fixed inset-y-0 left-0 z-50 w-80 bg-white p-2 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="border-b p-4 text-left">
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500">
-                  <Target className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-xl font-bold text-gray-900">
-                  NutriDash
-                </span>
-              </div>
-              <div className="mt-2 text-sm text-gray-600">
-                Olá, {data.name}!
-              </div>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <Menu className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-80 p-0">
+        <SheetHeader className="border-b p-4 text-left">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500">
+              <Target className="h-5 w-5 text-white" />
             </div>
-            <div className="mt-8 space-y-4">
-              <Button
-                onClick={() => {
-                  onReportClick();
-                  setIsOpen(false);
-                }}
-                className="flex w-full items-center justify-start rounded-lg bg-teal-500 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-teal-600"
-              >
-                <FileText className="mr-3 h-4 w-4" /> Meu Relatório
-              </Button>
-              <Button
-                onClick={() => {
-                  onShareClick();
-                  setIsOpen(false);
-                }}
-                variant="ghost"
-                className="flex w-full items-center justify-start px-4 py-3 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-              >
-                <Share className="mr-3 h-4 w-4" /> Compartilhar
-              </Button>
-              <Button
-                onClick={() => {
-                  onSettingsClick(); // Chama a nova função
-                  setIsOpen(false);
-                }}
-                variant="ghost"
-                className="flex w-full items-center justify-start px-4 py-3 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-              >
-                <Settings className="mr-3 h-4 w-4" /> Configurações
-              </Button>
-              <hr className="my-4" />
-              <Button
-                onClick={() => signOut()}
-                variant="ghost"
-                className="flex w-full items-center justify-start px-4 py-3 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
-              >
-                <LogOutIcon className="mr-3 h-4 w-4" /> Sair
-              </Button>
-            </div>
+            <SheetTitle className="text-xl font-bold text-gray-900">
+              NutriDash
+            </SheetTitle>
           </div>
+          <p className="pt-2 text-sm text-gray-600">Olá, {data.name}!</p>
+        </SheetHeader>
+        <div className="space-y-4 p-2 pt-8">
+          <Button
+            onClick={() => handleLinkClick(onReportClick)}
+            className="flex w-full items-center justify-start rounded-lg bg-teal-500 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-teal-600"
+          >
+            <FileText className="mr-3 h-4 w-4" /> Meu Relatório
+          </Button>
+          <Button
+            onClick={() => handleLinkClick(onShareClick)}
+            variant="ghost"
+            className="flex w-full items-center justify-start px-4 py-3 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          >
+            <Share className="mr-3 h-4 w-4" /> Compartilhar
+          </Button>
+          <Button
+            onClick={() => handleLinkClick(onSettingsClick)}
+            variant="ghost"
+            className="flex w-full items-center justify-start px-4 py-3 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          >
+            <Settings className="mr-3 h-4 w-4" /> Configurações
+          </Button>
+          <hr className="my-4" />
+          <Button
+            onClick={() => signOut()}
+            variant="ghost"
+            className="flex w-full items-center justify-start px-4 py-3 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
+          >
+            <LogOutIcon className="mr-3 h-4 w-4" /> Sair
+          </Button>
         </div>
-      )}
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

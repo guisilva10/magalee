@@ -100,7 +100,7 @@ const HeaderHome = () => {
           </div>
 
           {/* Mobile Menu */}
-          <div className="bg-background flex md:hidden">
+          <div className="bg-background relative flex md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
