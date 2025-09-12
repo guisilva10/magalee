@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const DashboardSectionHome = () => {
   return (
-    <section id="dashboard" className="relative px-4 py-20 sm:px-6 lg:px-8">
+    <section id="dashboard" className="relative px-4 sm:px-6 lg:px-8">
       <div className="relative container mx-auto">
         <div className="mb-16 py-12 text-center lg:py-20">
           <Badge className="bg-primary text-primary-foreground mb-4">

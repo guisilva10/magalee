@@ -1,6 +1,6 @@
 import { FaWhatsapp } from "react-icons/fa6";
 import { Badge } from "../ui/badge";
-import { Bot, Camera, Mic, Sparkles } from "lucide-react";
+import { Bot, Camera, Mic } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 
 const WhatsappSectionHome = () => {

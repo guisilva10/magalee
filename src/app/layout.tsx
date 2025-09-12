@@ -8,10 +8,6 @@ export const metadata: Metadata = {
   description: "Software de análise nutricional",
 };
 
-// const introFont = localFont({
-//   src: "./fonts/intro-font.woff",
-// });
-
 export default function RootLayout({
   children,
 }: Readonly<{

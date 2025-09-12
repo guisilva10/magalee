@@ -1,33 +1,84 @@
 import { google } from "googleapis";
 
-export async function getPatientData(name: string) {
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    },
-    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-  });
+// Define interfaces for our data structures
+export interface Meal {
+  date: string;
+  description: string;
+  calories: number;
+  carbs: number;
+  protein: number;
+  fats: number;
+}
 
-  const sheets = google.sheets({ version: "v4", auth });
+export interface PatientData {
+  userId: string;
+  name: string;
+  calories: string;
+  protein: string;
+  meals: Meal[];
+}
 
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+export async function getPatientData(
+  name: string,
+): Promise<PatientData | null> {
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      },
+      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+    });
 
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "Profile!A2:D", // aba Profile
-  });
+    const sheets = google.sheets({ version: "v4", auth });
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-  const rows = response.data.values || [];
+    // 1. Fetch user profile data
+    const profileResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Profile!A2:D",
+    });
 
-  const user = rows.find((row) => row[1] === name);
+    const profileRows = profileResponse.data.values || [];
+    const userProfile = profileRows.find((row) => row[1] === name);
 
-  if (!user) return null;
+    if (!userProfile) {
+      console.log("User not found in Profile sheet");
+      return null;
+    }
 
-  return {
-    userId: user[0],
-    name: user[1],
-    calories: user[2],
-    protein: user[3],
-  };
+    const userId = userProfile[0];
+
+    // 2. Fetch all meals data
+    const mealsResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Meals!A2:G", // Range includes all meal columns
+    });
+
+    const mealRows = mealsResponse.data.values || [];
+
+    // 3. Filter meals for the specific user
+    const userMeals: Meal[] = mealRows
+      .filter((row) => row[0] === userId) // Filter by User_ID
+      .map((row) => ({
+        date: row[1],
+        description: row[2],
+        calories: parseInt(row[3], 10) || 0,
+        carbs: parseInt(row[4], 10) || 0,
+        protein: parseInt(row[5], 10) || 0,
+        fats: parseInt(row[6], 10) || 0,
+      }));
+
+    // 4. Return combined data
+    return {
+      userId: userProfile[0],
+      name: userProfile[1],
+      calories: userProfile[2],
+      protein: userProfile[3],
+      meals: userMeals,
+    };
+  } catch (error) {
+    console.error("Error fetching patient data:", error);
+    return null;
+  }
 }

@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { Button, buttonVariants } from "../ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { Sparkles, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import Link from "next/link";
+import localFont from "next/font/local";
+import { cn } from "@/app/_lib/utils";
+
+const introFont = localFont({
+  src: "../../fonts/intro-font.woff",
+});
 
 const HeaderHome = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,33 +38,27 @@ const HeaderHome = () => {
         <div
           className={`flex items-center justify-between transition-all duration-500 ${isScrolled ? "h-12" : "h-16"}`}
         >
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between">
             <div
               className={`from-primary to-primary/80 flex items-center justify-center rounded-xl bg-gradient-to-br shadow-lg transition-all duration-500 ${
-                isScrolled ? "h-8 w-8" : "h-10 w-10"
+                isScrolled ? "size-8" : "size-10"
               }`}
             >
               <img
                 src="/logo.svg"
                 className={`text-primary-foreground transition-all duration-500 ${
-                  isScrolled ? "h-4 w-4" : "h-5 w-5"
+                  isScrolled ? "size-5" : "size-8"
                 }`}
               />
             </div>
-            <div className="flex flex-col">
-              <span
-                className={`text-foreground font-bold transition-all duration-500 ${
-                  isScrolled ? "text-lg" : "text-xl"
-                }`}
-              >
-                MAGALEE
-              </span>
-              <span
-                className={`text-primary text-xs font-medium ${isScrolled ? "hidden" : "block"}`}
-              >
-                AI Nutricional
-              </span>
-            </div>
+            <span
+              className={cn(
+                "text-foreground ml-2 font-bold transition-all duration-500",
+                [isScrolled ? "text-sm" : "text-lg", introFont.className],
+              )}
+            >
+              MAGALEE
+            </span>
           </div>
 
           {/* Desktop Navigation */}

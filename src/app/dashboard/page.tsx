@@ -1,4 +1,4 @@
-import DashboardClient from "./dashboard-client";
+import DashboardClient from "./_components/dashboard-client";
 import { auth } from "@/services/auth";
 import { getPatientData } from "../_lib/google-sheet";
 
