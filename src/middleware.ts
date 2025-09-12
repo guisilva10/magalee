@@ -39,9 +39,9 @@ export function middleware(request: NextRequest) {
   const hasVerifiedPatient = request.cookies.get("patient-verified");
 
   // Se alguém tentar acessar a página de registro de paciente SEM o "passe"
-  if (pathname === "/register-patient" && !hasVerifiedPatient) {
+  if (pathname === "/register" && !hasVerifiedPatient) {
     // Forçamos ele a voltar para o início do fluxo
-    return NextResponse.redirect(new URL(getUrl("/verify-patient")));
+    return NextResponse.redirect(new URL(getUrl("/verify-number")));
   }
 
   // Se nenhuma regra de redirecionamento foi acionada, permite o acesso
