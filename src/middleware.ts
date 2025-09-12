@@ -1,11 +1,6 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server";
-
-// A função getUrl pode ser movida para um lib para ser usada em outros lugares também
-const getUrl = (path: string) => {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-  return new URL(path, baseUrl).toString();
-};
+import { getUrl } from "./app/_lib/get-url";
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get(
