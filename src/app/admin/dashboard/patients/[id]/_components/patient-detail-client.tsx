@@ -1,18 +1,21 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Patient, Meal } from "@/server/sheet-data/get-sheet-all-data"; // Ajuste o caminho
+import {
+  Patient,
+  Meal,
+  WaterLog,
+} from "@/server/sheet-data/get-sheet-all-data"; // Ajuste o caminho
 import { format, isSameDay, subDays, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  BarChart,
-  Bar,
+  ResponsiveContainer,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
 
 import { Button, buttonVariants } from "@/app/_components/ui/button";
@@ -38,7 +41,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/app/_components/ui/table";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, Droplet } from "lucide-react";
 import { Badge } from "@/app/_components/ui/badge";
 import Link from "next/link";
 import { SendMonthlyReport } from "./send-report";
@@ -46,6 +49,7 @@ import { SendMonthlyReport } from "./send-report";
 interface PatientDetailClientProps {
   patient: Patient;
   allMeals: Meal[];
+  allWaterLogs: WaterLog[];
   dietStatus: {
     text: string;
     variant: "success" | "warning" | "destructive" | "default";
@@ -61,6 +65,7 @@ export function PatientDetailClient({
   patient,
   allMeals,
   dietStatus,
+  allWaterLogs,
 }: PatientDetailClientProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -69,6 +74,12 @@ export function PatientDetailClient({
       isSameDay(parseDateAsLocal(meal.Date), selectedDate),
     );
   }, [allMeals, selectedDate]);
+
+  const dailyWaterConsumption = useMemo(() => {
+    return allWaterLogs
+      .filter((log) => isSameDay(parseDateAsLocal(log.date), selectedDate))
+      .reduce((total, log) => total + log.waterMl, 0);
+  }, [allWaterLogs, selectedDate]);
 
   const dailyTotals = useMemo(() => {
     return dailyMeals.reduce(
@@ -126,7 +137,16 @@ export function PatientDetailClient({
             <p className="text-gray-500">
               Análise detalhada de consumo e macronutrientes.
             </p>
-            <Badge variant={dietStatus.variant}>{dietStatus.text}</Badge>
+
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Badge variant={dietStatus.variant}>{dietStatus.text}</Badge>
+              <Badge variant="outline" className="flex items-center gap-1.5">
+                <Droplet className="h-3.5 w-3.5" />
+                {dailyWaterConsumption > 0
+                  ? `${dailyWaterConsumption} ml de água consumidos`
+                  : "Sem registro de água hoje"}
+              </Badge>
+            </div>
           </div>
         </div>
         <div className="flex flex-col items-center gap-4 lg:flex-row">
@@ -298,19 +318,22 @@ export function PatientDetailClient({
         <CardContent>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
+              <LineChart
                 data={chartData}
                 margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                <YAxis stroke="#888888" fontSize={12} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="carbs" name="Carboidratos (g)" fill="#8884d8" />
-                <Bar dataKey="protein" name="Proteínas (g)" fill="#82ca9d" />
-                <Bar dataKey="fat" name="Gorduras (g)" fill="#ffc658" />
-              </BarChart>
+                <Line
+                  dataKey="carbs"
+                  name="Carboidratos (g)"
+                  stroke="#8884d8"
+                />
+                <Line dataKey="protein" name="Proteínas (g)" stroke="#82ca9d" />
+                <Line dataKey="fat" name="Gorduras (g)" stroke="#ffc658" />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </CardContent>

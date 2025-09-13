@@ -10,6 +10,7 @@ const FooterHome = () => {
               <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
                 <img
                   src="/logo.svg"
+                  alt="Logo da magalee"
                   className="text-primary-foreground h-5 w-5"
                 />
               </div>

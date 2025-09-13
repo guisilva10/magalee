@@ -17,16 +17,24 @@ export interface Meal {
   Date: string;
 }
 
+export interface WaterLog {
+  userId: string;
+  date: string;
+  waterMl: number;
+}
+
 export interface Patient {
   userId: string;
   name: string;
   calories: number;
   protein: number;
+  avgWaterMl?: number;
 }
 
 export interface DashboardData {
   totalPatients: number;
   totalMealsToday: number;
+  totalWaterToday: number;
   latestMeal: Meal | null;
   patients: Patient[];
   recentMeals: Meal[];
@@ -54,52 +62,86 @@ export async function getDashboardData(): Promise<DashboardData> {
   try {
     const doc = await getAuthenticatedDoc();
 
-    // CORREÇÃO 1: Usar o nome correto da aba da planilha ("Profile")
     const patientsSheet = doc.sheetsByTitle["Profile"];
     const mealsSheet = doc.sheetsByTitle["Meals"];
+    const waterSheet = doc.sheetsByTitle["Water"];
 
-    if (!patientsSheet || !mealsSheet) {
+    if (!patientsSheet || !mealsSheet || !waterSheet) {
       throw new Error(
-        "Uma ou mais planilhas (Profile, Meals) não foram encontradas.",
+        "Uma ou mais planilhas (Profile, Meals, Water) não foram encontradas.",
       );
     }
 
-    const [patientRows, mealRows] = await Promise.all([
+    const [patientRows, mealRows, waterRows] = await Promise.all([
       patientsSheet.getRows(),
       mealsSheet.getRows(),
+      waterSheet.getRows(),
     ]);
 
-    const allPatients: Patient[] = patientRows.map((row) => ({
-      userId: row.get("User_ID"),
-      name: row.get("Name"),
-      calories: parseFloat(row.get("Calories_target")),
-      protein: parseFloat(row.get("Protein_target")),
-    }));
+    // Mapeia os logs de água por usuário para otimizar a busca
+    const waterLogsByUser = new Map<string, any[]>();
+    waterRows.forEach((row) => {
+      const userId = row.get("User_ID");
+      if (userId) {
+        if (!waterLogsByUser.has(userId)) {
+          waterLogsByUser.set(userId, []);
+        }
+        waterLogsByUser.get(userId)?.push(row);
+      }
+    });
+
+    const allPatients: Patient[] = patientRows.map((row) => {
+      const userId = row.get("User_ID");
+      const patientWaterRows = waterLogsByUser.get(userId) || [];
+
+      // Calcula a média de consumo de água para o paciente
+      const dailyWaterMap = new Map<string, number>();
+      patientWaterRows.forEach((waterRow) => {
+        const dateKey = startOfDay(
+          new Date(waterRow.get("Date")),
+        ).toISOString();
+        const waterMl = parseFloat(waterRow.get("Water_ml") || "0");
+        dailyWaterMap.set(dateKey, (dailyWaterMap.get(dateKey) || 0) + waterMl);
+      });
+
+      const totalWater = Array.from(dailyWaterMap.values()).reduce(
+        (sum, value) => sum + value,
+        0,
+      );
+      const avgWaterPerDay =
+        dailyWaterMap.size > 0
+          ? Math.round(totalWater / dailyWaterMap.size)
+          : 0;
+
+      return {
+        userId: userId,
+        name: row.get("Name"),
+        calories: parseFloat(row.get("Calories_target") || "0"),
+        protein: parseFloat(row.get("Protein_target") || "0"),
+        avgWaterMl: avgWaterPerDay,
+      };
+    });
 
     const totalPatients = allPatients.length;
     const patientIdToNameMap = new Map(
       allPatients.map((p) => [p.userId, p.name]),
     );
-    // --- 2. Processar dados das Refeições (esta parte já estava correta) ---
     const allMeals: Meal[] = mealRows.map((row) => {
-      // Supondo que sua planilha "Meals" tenha uma coluna "User_ID"
       const patientId = row.get("User_ID");
-      // Busca o nome do paciente no mapa. Se não encontrar, usa um valor padrão.
       const patientName =
         patientIdToNameMap.get(patientId) || "Paciente Desconhecido";
-
       return {
         userId: patientId,
-        patientName: patientName,
+        patientName,
         Meal_description: row.get("Meal_description"),
-        Calories: parseFloat(row.get("Calories")),
-        carbohydrates: parseFloat(row.get("Carbs")) || 0,
-        protein: parseFloat(row.get("Protein")) || 0,
-        fat: parseFloat(row.get("Fats")) || 0,
-        // --- FIM DA ADIÇÃO ---
+        Calories: parseFloat(row.get("Calories") || "0"),
+        carbohydrates: parseFloat(row.get("Carbs") || "0"),
+        protein: parseFloat(row.get("Protein") || "0"),
+        fat: parseFloat(row.get("Fats") || "0"),
         Date: row.get("Date"),
       };
     });
+
     const timeZone = "America/Sao_Paulo";
     const today = new Date();
     const startOfToday = startOfDay(today);
@@ -109,18 +151,28 @@ export async function getDashboardData(): Promise<DashboardData> {
       const mealDate = toDate(meal.Date, { timeZone });
       return mealDate >= startOfToday && mealDate <= endOfToday;
     });
+
+    const todaysWaterRows = waterRows.filter((row) => {
+      const waterDate = toDate(row.get("Date"), { timeZone });
+      return waterDate >= startOfToday && waterDate <= endOfToday;
+    });
+
     const totalMealsToday = todaysMeals.length;
+    const totalWaterToday = todaysWaterRows.reduce(
+      (sum, row) => sum + parseFloat(row.get("Water_ml") || "0"),
+      0,
+    );
 
     const sortedMeals = [...allMeals].sort(
       (a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime(),
     );
-
     const latestMeal = sortedMeals.length > 0 ? sortedMeals[0] : null;
     const recentMeals = sortedMeals.slice(0, 5);
 
     return {
       totalPatients,
       totalMealsToday,
+      totalWaterToday,
       latestMeal,
       patients: allPatients,
       recentMeals,
@@ -131,6 +183,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     return {
       totalPatients: 0,
       totalMealsToday: 0,
+      totalWaterToday: 0,
       latestMeal: null,
       patients: [],
       recentMeals: [],
@@ -144,45 +197,54 @@ export async function getPatientStats(userId: string) {
   try {
     const doc = await getAuthenticatedDoc();
     const mealsSheet = doc.sheetsByTitle["Meals"];
+    const waterSheet = doc.sheetsByTitle["Water"];
 
-    if (!mealsSheet) {
-      throw new Error("Planilha 'Meals' não foi encontrada.");
+    if (!mealsSheet || !waterSheet) {
+      throw new Error("Planilha 'Meals' ou 'Water' não foi encontrada.");
     }
 
-    const rows = await mealsSheet.getRows();
+    const [mealRows, waterRows] = await Promise.all([
+      mealsSheet.getRows(),
+      waterSheet.getRows(),
+    ]);
 
-    // 1. Filtra todas as refeições para pegar apenas as do paciente selecionado
-    const patientMealRows = rows.filter((row) => row.get("User_ID") === userId);
+    const patientMealRows = mealRows.filter(
+      (row) => row.get("User_ID") === userId,
+    );
+    const patientWaterRows = waterRows.filter(
+      (row) => row.get("User_ID") === userId,
+    ); // Calcula estatísticas de refeições
 
-    if (patientMealRows.length === 0) {
-      return {
-        success: true,
-        stats: {
-          totalMeals: 0,
-          totalCalories: 0,
-          avgCaloriesPerMeal: 0,
-          recentMeals: [],
-        },
-      };
-    }
+    const totalMeals = patientMealRows.length;
+    const totalCalories = patientMealRows.reduce(
+      (sum, row) => sum + parseFloat(row.get("Calories") || "0"),
+      0,
+    );
+    const avgCaloriesPerMeal = totalMeals > 0 ? totalCalories / totalMeals : 0;
 
-    // 2. Mapeia as linhas para objetos estruturados e ordena por data
-    const patientMeals = patientMealRows
+    // Calcula estatísticas de água
+    const dailyWaterMap = new Map<string, number>();
+    patientWaterRows.forEach((row) => {
+      const dateKey = startOfDay(new Date(row.get("Date"))).toISOString();
+      const waterMl = parseFloat(row.get("Water_ml") || "0");
+      dailyWaterMap.set(dateKey, (dailyWaterMap.get(dateKey) || 0) + waterMl);
+    });
+
+    const totalWater = Array.from(dailyWaterMap.values()).reduce(
+      (sum, value) => sum + value,
+      0,
+    );
+    const avgWaterPerDay =
+      dailyWaterMap.size > 0 ? totalWater / dailyWaterMap.size : 0;
+
+    const recentMeals = patientMealRows
       .map((row) => ({
         description: row.get("Meal_description") as string,
         calories: parseFloat(row.get("Calories")),
         date: new Date(row.get("Date")),
       }))
-      .sort((a, b) => b.date.getTime() - a.date.getTime());
-
-    // 3. Calcula as estatísticas
-    const totalMeals = patientMeals.length;
-    const totalCalories = patientMeals.reduce(
-      (sum, meal) => sum + meal.calories,
-      0,
-    );
-    const avgCaloriesPerMeal = totalMeals > 0 ? totalCalories / totalMeals : 0;
-    const recentMeals = patientMeals.slice(0, 5); // Pega as 5 mais recentes
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 5);
 
     return {
       success: true,
@@ -190,9 +252,11 @@ export async function getPatientStats(userId: string) {
         totalMeals,
         totalCalories,
         avgCaloriesPerMeal: Math.round(avgCaloriesPerMeal),
+        totalWater,
+        avgWaterPerDay: Math.round(avgWaterPerDay),
         recentMeals: recentMeals.map((meal) => ({
           ...meal,
-          date: meal.date.toISOString(), // Serializa a data para o cliente
+          date: meal.date.toISOString(),
         })),
       },
     };
@@ -215,7 +279,6 @@ function calculateDietStatus(
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
 
-  // 1. Filtra refeições dos últimos 30 dias e agrupa por dia
   const dailyConsumptions = new Map<
     string,
     { calories: number; protein: number }
@@ -233,13 +296,10 @@ function calculateDietStatus(
     }
   });
 
-  // 2. Verifica se há dados suficientes
   if (dailyConsumptions.size < 5) {
-    // Exige pelo menos 5 dias de registros nos últimos 30
     return { text: "Dados Insuficientes", variant: "default" };
   }
 
-  // 3. Calcula a média diária de consumo
   let totalAvgCalories = 0;
   let totalAvgProtein = 0;
   dailyConsumptions.forEach((day) => {
@@ -249,7 +309,6 @@ function calculateDietStatus(
   const avgCalories = totalAvgCalories / dailyConsumptions.size;
   const avgProtein = totalAvgProtein / dailyConsumptions.size;
 
-  // 4. Compara a média com as metas (com uma margem de 15%)
   const calRatio = avgCalories / patientTargets.calories;
   const protRatio = avgProtein / patientTargets.protein;
 
@@ -266,6 +325,7 @@ function calculateDietStatus(
 export async function getPatientDetails(userId: string): Promise<{
   patient: Patient | null;
   allMeals: Meal[];
+  allWaterLogs: WaterLog[];
   dietStatus: {
     text: string;
     variant: "success" | "warning" | "destructive" | "default";
@@ -276,47 +336,70 @@ export async function getPatientDetails(userId: string): Promise<{
     const doc = await getAuthenticatedDoc();
     const patientsSheet = doc.sheetsByTitle["Profile"];
     const mealsSheet = doc.sheetsByTitle["Meals"];
+    const waterSheet = doc.sheetsByTitle["Water"];
 
-    if (!patientsSheet || !mealsSheet) {
+    if (!patientsSheet || !mealsSheet || !waterSheet) {
       throw new Error("Planilhas não encontradas.");
     }
 
-    const [patientRows, mealRows] = await Promise.all([
+    const [patientRows, mealRows, waterRows] = await Promise.all([
       patientsSheet.getRows(),
       mealsSheet.getRows(),
+      waterSheet.getRows(),
     ]);
 
-    // Encontra o perfil do paciente
     const patientRow = patientRows.find((row) => row.get("User_ID") === userId);
     if (!patientRow) {
-      return { patient: null, allMeals: [], dietStatus: defaultStatus };
+      return {
+        patient: null,
+        allMeals: [],
+        allWaterLogs: [],
+        dietStatus: defaultStatus,
+      };
     }
-    const patient: Patient = {
+    // A interface do paciente é atualizada aqui, mas getPatientDetails não retorna avgWaterMl.
+    // O ideal seria unificar, mas por agora vamos manter como está para não quebrar outras partes.
+    const patient: Omit<Patient, "avgWaterMl"> & {
+      calories: number;
+      protein: number;
+    } = {
       userId: patientRow.get("User_ID"),
       name: patientRow.get("Name"),
-      calories: parseFloat(patientRow.get("Calories_target")),
-      protein: parseFloat(patientRow.get("Protein_target")),
+      calories: parseFloat(patientRow.get("Calories_target") || "0"),
+      protein: parseFloat(patientRow.get("Protein_target") || "0"),
     };
 
-    // Filtra e mapeia todas as refeições do paciente
     const allMeals: Meal[] = mealRows
       .filter((row) => row.get("User_ID") === userId)
       .map((row) => ({
         userId: row.get("User_ID"),
         patientName: patient.name,
         Meal_description: row.get("Meal_description"),
-        Calories: parseFloat(row.get("Calories")),
-        carbohydrates: parseFloat(row.get("Carbs")),
-        protein: parseFloat(row.get("Proteins")),
-        fat: parseFloat(row.get("Fats")),
+        Calories: parseFloat(row.get("Calories") || "0"),
+        carbohydrates: parseFloat(row.get("Carbs") || "0"),
+        protein: parseFloat(row.get("Protein") || "0"),
+        fat: parseFloat(row.get("Fats") || "0"),
         Date: row.get("Date"),
+      }));
+
+    const allWaterLogs: WaterLog[] = waterRows
+      .filter((row) => row.get("User_ID") === userId)
+      .map((row) => ({
+        userId: row.get("User_ID"),
+        date: row.get("Date"),
+        waterMl: parseFloat(row.get("Water_ml") || "0"),
       }));
 
     const dietStatus = calculateDietStatus(allMeals, patient);
 
-    return { patient, allMeals, dietStatus };
+    return { patient: patient as Patient, allMeals, allWaterLogs, dietStatus };
   } catch (error) {
     console.error("Erro ao buscar detalhes do paciente:", error);
-    return { patient: null, allMeals: [], dietStatus: defaultStatus };
+    return {
+      patient: null,
+      allMeals: [],
+      allWaterLogs: [],
+      dietStatus: defaultStatus,
+    };
   }
 }

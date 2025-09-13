@@ -169,9 +169,9 @@ export default function LoginPage() {
                       disabled={isPending}
                     >
                       {isPending ? (
-                        <Loader2Icon className="mr-2 size-4 animate-spin" />
+                        <Loader2Icon className="size-4 animate-spin" />
                       ) : (
-                        <LogInIcon className="mr-2 size-4" />
+                        <LogInIcon className="size-4" />
                       )}
                       Entrar como Paciente
                     </Button>

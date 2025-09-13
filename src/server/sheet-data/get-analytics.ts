@@ -17,11 +17,18 @@ export interface MealsByCategory {
   value: number; // Quantidade de refeições
 }
 
+export interface WaterPerDay {
+  date: string;
+  totalWater: number;
+}
+
 export interface AnalyticsData {
   totalMeals: number;
   averageCalories: number;
+  totalWater: number;
   caloriesPerDay: CaloriesPerDay[];
   mealsByCategory: MealsByCategory[];
+  waterPerDay: WaterPerDay[];
 }
 
 async function getAuthenticatedDoc(): Promise<GoogleSpreadsheet> {
@@ -44,11 +51,13 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
   try {
     const doc = await getAuthenticatedDoc();
     const mealsSheet = doc.sheetsByTitle["Meals"];
+    const waterSheet = doc.sheetsByTitle["Water"];
     if (!mealsSheet) throw new Error("Planilha 'Meals' não encontrada.");
+    if (!waterSheet) throw new Error("Planilha 'Water' não encontrada.");
 
     const rows = await mealsSheet.getRows();
+    const waterRows = await waterSheet.getRows(); // --- Cálculos ---
 
-    // --- Cálculos ---
     const totalMeals = rows.length;
     const totalCaloriesSum = rows.reduce(
       (sum, row) => sum + parseFloat(row.get("Calories") || "0"),
@@ -56,8 +65,11 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
     );
     const averageCalories =
       totalMeals > 0 ? Math.round(totalCaloriesSum / totalMeals) : 0;
+    const totalWater = waterRows.reduce(
+      (sum, row) => sum + parseFloat(row.get("Water_ml") || "0"),
+      0,
+    ); // 1. Agrupar calorias por dia
 
-    // 1. Agrupar calorias por dia
     const dailyCaloriesMap = new Map<string, number>();
     rows.forEach((row) => {
       const dateStr = row.get("Date"); // Ex: "2025-09-04"
@@ -76,9 +88,8 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
         date: format(parseISO(date), "dd/MMM", { locale: ptBR }),
         totalCalories,
       }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // 2. Agrupar refeições por categoria
 
-    // 2. Agrupar refeições por categoria
     const categoryCountMap = new Map<string, number>();
     rows.forEach((row) => {
       const description = row.get("Meal_description");
@@ -95,20 +106,42 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
       categoryCountMap.entries(),
     ).map(([name, value]) => ({ name, value }));
 
+    // 3. Agrupar água por dia
+    const dailyWaterMap = new Map<string, number>();
+    waterRows.forEach((row) => {
+      const dateStr = row.get("Date");
+      const water = parseFloat(row.get("Water_ml") || "0");
+      if (dateStr && !isNaN(water)) {
+        const dateKey = format(parseISO(dateStr), "yyyy-MM-dd");
+        const currentWater = dailyWaterMap.get(dateKey) || 0;
+        dailyWaterMap.set(dateKey, currentWater + water);
+      }
+    });
+
+    const waterPerDay = Array.from(dailyWaterMap.entries())
+      .map(([date, totalWater]) => ({
+        date: format(parseISO(date), "dd/MMM", { locale: ptBR }),
+        totalWater,
+      }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
     return {
       totalMeals,
       averageCalories,
+      totalWater,
       caloriesPerDay,
       mealsByCategory,
+      waterPerDay,
     };
   } catch (error) {
-    console.error("Erro ao buscar dados para analytics:", error);
-    // Retorna um estado vazio em caso de erro para não quebrar a página
+    console.error("Erro ao buscar dados para analytics:", error); // Retorna um estado vazio em caso de erro para não quebrar a página
     return {
       totalMeals: 0,
       averageCalories: 0,
+      totalWater: 0,
       caloriesPerDay: [],
       mealsByCategory: [],
+      waterPerDay: [],
     };
   }
 }

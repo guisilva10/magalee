@@ -96,6 +96,12 @@ export default function PatientsDashboard({
                       </p>
                       <p className="text-muted-foreground">Proteína</p>
                     </div>
+                    <div>
+                      <p className="text-primary text-sm font-bold">
+                        {patient.avgWaterMl}ml
+                      </p>
+                      <p className="text-muted-foreground">Hidratação</p>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter className="flex gap-2">

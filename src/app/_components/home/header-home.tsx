@@ -45,6 +45,7 @@ const HeaderHome = () => {
               }`}
             >
               <img
+                alt="Logo da magalee"
                 src="/logo.svg"
                 className={`text-primary-foreground transition-all duration-500 ${
                   isScrolled ? "size-5" : "size-8"
@@ -107,7 +108,10 @@ const HeaderHome = () => {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 px-6">
+              <SheetContent
+                side="right"
+                className="flex w-80 flex-col overflow-y-auto px-4 py-4"
+              >
                 <div className="mt-8 flex flex-col space-y-6">
                   {/* Logo no Sheet */}
                   <div className="flex items-center space-x-3 border-b pb-6">

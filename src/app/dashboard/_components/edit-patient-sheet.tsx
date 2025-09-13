@@ -70,7 +70,10 @@ export function SettingsSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col px-4 sm:max-w-md">
+      <SheetContent
+        side="left"
+        className="flex w-full flex-col px-4 sm:max-w-sm"
+      >
         <SheetHeader>
           <SheetTitle>Configurações do Perfil</SheetTitle>
           <SheetDescription>

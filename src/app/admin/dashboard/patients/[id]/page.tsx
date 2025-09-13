@@ -9,7 +9,8 @@ export default async function PatientDetailPage({
 }) {
   // O ID vem decodificado da URL, então decodificamos
   const userId = decodeURIComponent((await params).id);
-  const { patient, allMeals, dietStatus } = await getPatientDetails(userId);
+  const { patient, allMeals, dietStatus, allWaterLogs } =
+    await getPatientDetails(userId);
 
   if (!patient) {
     notFound();
@@ -17,6 +18,7 @@ export default async function PatientDetailPage({
 
   return (
     <PatientDetailClient
+      allWaterLogs={allWaterLogs}
       patient={patient}
       allMeals={allMeals}
       dietStatus={dietStatus}

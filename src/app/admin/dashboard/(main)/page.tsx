@@ -24,7 +24,9 @@ import {
   AlertCircle,
   TrendingUp,
   Clock,
+  Droplet,
 } from "lucide-react";
+import { FaWater, FaWaterLadder } from "react-icons/fa6";
 
 export default async function AdminDashboardPage() {
   const {
@@ -33,6 +35,7 @@ export default async function AdminDashboardPage() {
     latestMeal,
     patients,
     recentMeals,
+    totalWaterToday,
     error,
   } = await getDashboardData();
 
@@ -67,7 +70,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Métricas Principais */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-muted-foreground text-sm font-medium">
@@ -92,8 +95,8 @@ export default async function AdminDashboardPage() {
             <CardTitle className="text-muted-foreground text-sm font-medium">
               Registros Hoje
             </CardTitle>
-            <div className="rounded-full bg-indigo-600/10 p-2">
-              <UtensilsCrossed className="h-4 w-4 text-indigo-600" />
+            <div className="rounded-full bg-red-600/10 p-2">
+              <UtensilsCrossed className="h-4 w-4 text-red-600" />
             </div>
           </CardHeader>
           <CardContent className="space-y-1">
@@ -103,7 +106,7 @@ export default async function AdminDashboardPage() {
               <span>Refeições registradas</span>
             </div>
           </CardContent>
-          <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-indigo-400 to-indigo-600" />
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-red-400 to-red-600" />
         </Card>
 
         <Card className="relative overflow-hidden md:col-span-2 lg:col-span-1">
@@ -135,6 +138,31 @@ export default async function AdminDashboardPage() {
             )}
           </CardContent>
           <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-amber-500 to-amber-600" />
+        </Card>
+        <Card className="relative overflow-hidden md:col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-muted-foreground text-sm font-medium">
+              Água Consumida
+            </CardTitle>
+            <div className="rounded-full bg-blue-500/10 p-2">
+              <Droplet className="h-4 w-4 text-blue-500" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="truncate text-lg font-semibold">
+              {totalWaterToday || 0}ml
+            </div>
+            {totalWaterToday > 0 ? ( // <-- LÓGICA CORRIGIDA AQUI
+              <p className="text-muted-foreground text-xs">
+                Total registrado hoje
+              </p>
+            ) : (
+              <p className="text-muted-foreground text-xs">
+                Aguardando primeiro registro
+              </p>
+            )}
+          </CardContent>
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-500 to-blue-600" />
         </Card>
       </div>
 

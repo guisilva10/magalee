@@ -81,7 +81,11 @@ const WhatsappSectionHome = () => {
               <CardContent className="p-0">
                 <div className="bg-primary flex items-center space-x-3 p-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white">
-                    <img src="/logo.svg" className="text-primary h-5 w-5" />
+                    <img
+                      src="/logo.svg"
+                      alt="Logo da magalee"
+                      className="text-primary h-5 w-5"
+                    />
                   </div>
                   <div>
                     <p className="font-semibold text-white">MAGALEE</p>

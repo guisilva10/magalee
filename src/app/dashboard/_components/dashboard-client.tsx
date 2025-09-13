@@ -18,6 +18,9 @@ import {
   Download,
   Loader2,
   Share2,
+  ChevronLeft,
+  CalendarIcon,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "../../_components/ui/button";
 import { signOut } from "next-auth/react";
@@ -34,6 +37,8 @@ import { SettingsSheet } from "./edit-patient-sheet";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -48,13 +53,19 @@ interface Meal {
   protein: number;
   fats: number;
 }
+interface WaterLog {
+  date: string;
+  amount_ml: number;
+}
 interface PatientData {
   userId: string;
   name: string;
   caloriesTarget: string;
   proteinTarget: string;
   meals: Meal[];
+  waterLogs: WaterLog[];
 }
+
 interface DashboardClientProps {
   data: PatientData | null;
 }
@@ -117,37 +128,42 @@ const getDietStatus = (
 
 // --- COMPONENTE DO DIALOG REFATORADO ---
 // Agora ele apenas renderiza o conteúdo e é controlado por props
-const ReportDialog = ({
+const ReportSheet = ({
   isOpen,
   onOpenChange,
   data,
   consumedTotals,
+  consumedWater,
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   data: PatientData;
   consumedTotals: ConsumedTotals;
+  consumedWater: number;
 }) => {
   const dietStatus = getDietStatus(consumedTotals, data);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="left"
+        className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-sm"
+      >
+        <SheetHeader>
           <div className="flex items-center space-x-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-500">
               <FileText className="h-6 w-6 text-white" />
             </div>
             <div>
-              <DialogTitle>Relatório Nutricional</DialogTitle>
-              <DialogDescription>
+              <SheetTitle>Relatório Nutricional</SheetTitle>
+              <SheetDescription>
                 Resumo do seu dia, {data.name}.
-              </DialogDescription>
+              </SheetDescription>
             </div>
           </div>
-        </DialogHeader>
+        </SheetHeader>
         <div className="p-6 pt-2">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6">
             <div className="rounded-lg border bg-gray-50 p-4">
               <h3 className="font-semibold text-gray-800">
                 Status da Alimentação
@@ -164,6 +180,12 @@ const ReportDialog = ({
                   <span>Calorias:</span>{" "}
                   <span className="font-medium">
                     {consumedTotals.calories} / {data.caloriesTarget} kcal
+                  </span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Hidratação Total:</span>{" "}
+                  <span className="font-medium">
+                    {consumedWater.toFixed(1)} L
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -210,8 +232,8 @@ const ReportDialog = ({
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 };
 
@@ -264,7 +286,7 @@ const MagaleeMetricCard = ({
         <div
           className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.icon}`}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="size-4" />
         </div>
       </div>
       <div className="space-y-3">
@@ -293,6 +315,103 @@ const MagaleeMetricCard = ({
             {percentage}% da meta
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const MetricCard = ({
+  title,
+  value, // O valor atual consumido
+  unit,
+  color,
+  icon: Icon,
+  description, // Prop opcional para a descrição
+  target, // Prop opcional para a meta (controla a barra de progresso)
+}: {
+  title: string;
+  value: number;
+  unit: string;
+  color: "green" | "blue" | "orange";
+  icon: React.ElementType;
+  description?: string;
+  target?: number;
+}) => {
+  const colorClasses = {
+    green: {
+      icon: "bg-green-500 text-white",
+      valueText: "text-green-600",
+      progress: "bg-green-500",
+      progressBg: "bg-green-100",
+    },
+    blue: {
+      icon: "bg-blue-500 text-white",
+      valueText: "text-blue-600",
+      progress: "bg-blue-500",
+      progressBg: "bg-blue-100",
+    },
+    orange: {
+      icon: "bg-orange-500 text-white",
+      valueText: "text-orange-600",
+      progress: "bg-orange-500",
+      progressBg: "bg-orange-100",
+    },
+  };
+  const colors = colorClasses[color];
+
+  // Calcula a porcentagem apenas se houver uma meta
+  const percentage =
+    target && target > 0 ? Math.round((value / target) * 100) : 0;
+
+  // Formata o valor principal (ex: 1.8 ou 1500)
+  const formattedValue =
+    typeof value === "number" && value % 1 !== 0
+      ? value.toFixed(1)
+      : value.toLocaleString("pt-BR");
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+      <div className="mb-4 flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-600">{title}</span>
+        <div
+          className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.icon}`}
+        >
+          <Icon className="size-4" />
+        </div>
+      </div>
+      <div className="space-y-3">
+        <div>
+          <div className={`text-3xl font-bold ${colors.valueText} mb-1`}>
+            {formattedValue}
+            <span className="ml-1 text-2xl font-medium text-gray-500">
+              {unit}
+            </span>
+          </div>
+          {/* Renderiza a descrição se ela for fornecida */}
+          {description && (
+            <p className="text-sm text-gray-500">{description}</p>
+          )}
+        </div>
+
+        {/* Renderiza a barra de progresso APENAS se uma meta (target) for fornecida */}
+        {target && (
+          <div className="space-y-2">
+            <div className="text-right text-sm text-gray-500">
+              de {target.toLocaleString("pt-BR")} {unit}
+            </div>
+            <div
+              className={`h-2 w-full ${colors.progressBg} overflow-hidden rounded-full`}
+            >
+              <div
+                className={`h-full ${colors.progress} transition-all duration-500 ease-out`}
+                style={{ width: `${Math.min(percentage, 100)}%` }}
+              />
+            </div>
+            <div className={`text-sm font-medium ${colors.valueText}`}>
+              {percentage}% da meta
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -348,39 +467,42 @@ const ShareDialog = ({
   const resetGenerator = () => setGeneratedImage(null);
 
   return (
-    <Dialog
+    <Sheet
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) resetGenerator();
         onOpenChange(open);
       }}
     >
-      <DialogContent className="max-w-sm overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Compartilhar Relatório</DialogTitle>
-          <DialogDescription>
+      <SheetContent
+        side="left"
+        className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-sm"
+      >
+        <SheetHeader>
+          <SheetTitle>Compartilhar Relatório</SheetTitle>
+          <SheetDescription>
             {generatedImage
               ? "Sua imagem está pronta!"
               : "Gere uma imagem do seu resumo diário."}
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         <div className="py-4">
           {generatedImage ? (
             <img
               src={generatedImage}
               alt="Relatório Nutricional Gerado"
-              className="w-full rounded-lg border shadow-md"
+              className="border-border w-full rounded-lg border shadow-md"
             />
           ) : (
             <div
               ref={shareableCardRef}
-              className="rounded-lg border border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-100 p-6 shadow-sm"
+              className="rounded-lg border p-6 shadow-sm"
             >
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-xl font-bold text-teal-800">
+                <h3 className="text-primary text-xl font-bold">
                   Resumo Diário
                 </h3>
-                <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-teal-700">
+                <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold">
                   {data.name}
                 </span>
               </div>
@@ -418,14 +540,14 @@ const ShareDialog = ({
             </div>
           )}
         </div>
-        <DialogFooter>
+        <SheetFooter>
           {generatedImage ? (
             <>
               <Button onClick={resetGenerator} variant="outline">
                 Gerar Novamente
               </Button>
               <Button onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 size-4" />
                 Baixar
               </Button>
             </>
@@ -436,16 +558,16 @@ const ShareDialog = ({
               className="w-full"
             >
               {isGenerating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (
-                <Share2 className="mr-2 h-4 w-4" />
+                <Share2 className="mr-2 size-4" />
               )}
               {isGenerating ? "Gerando..." : "Gerar Imagem"}
             </Button>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 };
 
@@ -491,21 +613,21 @@ const MobileMenu = ({
             onClick={() => handleLinkClick(onReportClick)}
             className="flex w-full items-center justify-start rounded-lg bg-teal-500 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-teal-600"
           >
-            <FileText className="mr-3 h-4 w-4" /> Meu Relatório
+            <FileText className="size-4" /> Meu Relatório
           </Button>
           <Button
             onClick={() => handleLinkClick(onShareClick)}
             variant="ghost"
             className="flex w-full items-center justify-start px-4 py-3 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
-            <Share className="mr-3 h-4 w-4" /> Compartilhar
+            <Share className="size-4" /> Compartilhar
           </Button>
           <Button
             onClick={() => handleLinkClick(onSettingsClick)}
             variant="ghost"
             className="flex w-full items-center justify-start px-4 py-3 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
-            <Settings className="mr-3 h-4 w-4" /> Configurações
+            <Settings className="size-4" /> Configurações
           </Button>
           <hr className="my-4" />
           <Button
@@ -513,12 +635,37 @@ const MobileMenu = ({
             variant="ghost"
             className="flex w-full items-center justify-start px-4 py-3 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
           >
-            <LogOutIcon className="mr-3 h-4 w-4" /> Sair
+            <LogOutIcon className="text-destructive mr-2 size-4" /> Sair
           </Button>
         </div>
       </SheetContent>
     </Sheet>
   );
+};
+
+const dateToYyyyMmDd = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const formatDateForDisplay = (date: Date): string => {
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return "Hoje";
+  }
+  if (date.toDateString() === yesterday.toDateString()) {
+    return "Ontem";
+  }
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
 };
 
 // --- COMPONENTE PRINCIPAL AJUSTADO ---
@@ -527,10 +674,37 @@ export default function DashboardClient({ data }: DashboardClientProps) {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // NOVO: Funções para navegar entre os dias
+  const handlePreviousDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() - 1);
+    setSelectedDate(newDate);
+  };
+
+  const handleNextDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() + 1);
+    setSelectedDate(newDate);
+  };
+
+  const filteredMeals = useMemo(() => {
+    if (!data?.meals) return [];
+    const dateString = dateToYyyyMmDd(selectedDate);
+    return data.meals.filter((meal) => meal.date === dateString);
+  }, [data, selectedDate]);
+
+  // Filtra os registros de água com base na data selecionada
+  const filteredWaterLogs = useMemo(() => {
+    if (!data?.waterLogs) return [];
+    const dateString = dateToYyyyMmDd(selectedDate);
+    return data.waterLogs.filter((log) => log.date === dateString);
+  }, [data, selectedDate]);
 
   const consumedTotals = useMemo(() => {
-    if (!data) return { calories: 0, protein: 0, carbs: 0, fats: 0 };
-    return data.meals.reduce(
+    // A dependência agora é `filteredMeals`, não `data`
+    return filteredMeals.reduce(
       (acc, meal) => {
         acc.calories += meal.calories;
         acc.protein += meal.protein;
@@ -540,10 +714,17 @@ export default function DashboardClient({ data }: DashboardClientProps) {
       },
       { calories: 0, protein: 0, carbs: 0, fats: 0 },
     );
-  }, [data]);
+  }, [filteredMeals]);
+
+  const consumedWaterLiters = useMemo(() => {
+    const totalMl = filteredWaterLogs.reduce(
+      (acc, log) => acc + log.amount_ml,
+      0,
+    );
+    return totalMl / 1000;
+  }, [filteredWaterLogs]);
 
   if (!data) {
-    // ... (código para usuário não encontrado permanece o mesmo)
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="border-b border-gray-200 bg-white">
@@ -585,8 +766,6 @@ export default function DashboardClient({ data }: DashboardClientProps) {
 
   const totalMacros =
     consumedTotals.carbs + consumedTotals.protein + consumedTotals.fats;
-  const consumedWater = 1.8;
-  const targetWater = 2.5;
 
   return (
     <div className="min-h-screen bg-gray-50 py-16">
@@ -620,7 +799,7 @@ export default function DashboardClient({ data }: DashboardClientProps) {
               onClick={() => setIsReportOpen(true)} // Ação para abrir o dialog
               className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-600"
             >
-              <FileText className="mr-2 h-4 w-4" />
+              <FileText className="size-4" />
               Meu Relatório
             </Button>
             <Button
@@ -628,14 +807,14 @@ export default function DashboardClient({ data }: DashboardClientProps) {
               variant="ghost"
               className="flex items-center space-x-1 text-gray-600 transition-colors hover:text-gray-900"
             >
-              <Share className="h-4 w-4" />
+              <Share className="size-4" />
               <span className="text-sm">Compartilhar</span>
             </Button>
             <Button
               onClick={() => setIsSettingsOpen(true)}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 p-0 transition-colors hover:bg-gray-300"
             >
-              <Settings className="h-4 w-4 text-gray-600" />
+              <Settings className="size-4 text-gray-600" />
             </Button>
 
             <Button
@@ -644,7 +823,7 @@ export default function DashboardClient({ data }: DashboardClientProps) {
               onClick={() => signOut()}
               className="h-9 w-9 border"
             >
-              <LogOutIcon className="h-4 w-4" />
+              <LogOutIcon className="text-destructive size-4" />
             </Button>
           </div>
           <div className="block text-sm text-gray-600 md:hidden">
@@ -654,6 +833,31 @@ export default function DashboardClient({ data }: DashboardClientProps) {
       </header>
 
       <main className="p-6">
+        <div className="mb-6 flex items-center justify-center space-x-4 rounded-lg border bg-white p-2 shadow-sm">
+          <Button
+            onClick={handlePreviousDay}
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex items-center space-x-2 text-center">
+            <CalendarIcon className="h-5 w-5 text-gray-500" />
+            <span className="w-24 text-lg font-semibold text-gray-800">
+              {formatDateForDisplay(selectedDate)}
+            </span>
+          </div>
+          <Button
+            onClick={handleNextDay}
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+
         {/* ... (O restante do conteúdo da <main> permanece o mesmo) ... */}
         <div className="mb-8 grid gap-6 md:grid-cols-3">
           <MagaleeMetricCard
@@ -664,10 +868,10 @@ export default function DashboardClient({ data }: DashboardClientProps) {
             color="green"
             icon={Target}
           />
-          <MagaleeMetricCard
+          <MetricCard
             title="Hidratação"
-            current={consumedWater}
-            target={targetWater}
+            value={consumedWaterLiters}
+            description="Consumido hoje"
             unit="L"
             color="blue"
             icon={Droplets}
@@ -686,7 +890,7 @@ export default function DashboardClient({ data }: DashboardClientProps) {
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center space-x-3 p-6">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500">
-                <PieChart className="h-4 w-4 text-white" />
+                <PieChart className="size-4 text-white" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">
@@ -751,7 +955,7 @@ export default function DashboardClient({ data }: DashboardClientProps) {
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center space-x-3 p-6">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
-                <TrendingUp className="h-4 w-4 text-white" />
+                <TrendingUp className="size-4 text-white" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">
@@ -774,14 +978,14 @@ export default function DashboardClient({ data }: DashboardClientProps) {
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center space-x-3 p-6">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
-                <Calendar className="h-4 w-4 text-white" />
+                <Calendar className="size-4 text-white" />
               </div>
               <h3 className="font-semibold text-gray-900">Refeições de Hoje</h3>
             </div>
             <div className="p-6 pt-0">
-              {data.meals.length > 0 ? (
+              {filteredMeals.length > 0 ? (
                 <ul className="divide-y divide-gray-200">
-                  {data.meals.map((meal, index) => (
+                  {filteredMeals.map((meal, index) => (
                     <li
                       key={index}
                       className="flex items-center justify-between py-4"
@@ -811,11 +1015,12 @@ export default function DashboardClient({ data }: DashboardClientProps) {
       </main>
 
       {/* RENDERIZA O DIALOG CONTROLADO PELO ESTADO */}
-      <ReportDialog
+      <ReportSheet
         isOpen={isReportOpen}
         onOpenChange={setIsReportOpen}
         data={data}
         consumedTotals={consumedTotals}
+        consumedWater={consumedWaterLiters}
       />
       <SettingsSheet
         isOpen={isSettingsOpen}
