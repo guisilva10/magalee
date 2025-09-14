@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSheetData } from "@/server/sheet-data/get-sheet-data";
 import { NextResponse } from "next/server";
 

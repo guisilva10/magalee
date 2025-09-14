@@ -10,6 +10,16 @@ export interface Meal {
   fats: number;
 }
 
+export interface Alarm {
+  date: string;
+  reminderText: string;
+  fixedTime: string | null;
+  frequencyMinutes: number | null;
+  status: string;
+  lastSent: string | null;
+  uniqueId: string;
+}
+
 // NOVO: Interface para os registros de água
 export interface WaterLog {
   date: string;
@@ -24,7 +34,8 @@ export interface PatientData {
   email?: string;
   password?: string;
   meals: Meal[];
-  waterLogs: WaterLog[]; // NOVO: Adicionado campo para os registros de água
+  waterLogs: WaterLog[];
+  alarms: Alarm[];
 }
 
 export async function getPatientData(
@@ -94,7 +105,26 @@ export async function getPatientData(
         amount_ml: parseInt(row[2], 10) || 0, // Converte a coluna C (Water_ml) para número
       }));
 
-    // 6. Return combined data
+    const alarmsResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Alarms!A2:H", // Range para a aba "Alarms"
+    });
+
+    const alarmRows = alarmsResponse.data.values || [];
+
+    // NOVO: 7. Filter alarms for the specific user
+    const userAlarms: Alarm[] = alarmRows
+      .filter((row) => row[0] === userId) // Filtra pelo mesmo User_ID
+      .map((row) => ({
+        date: row[1],
+        reminderText: row[2],
+        fixedTime: row[3] || null, // Coluna D (Horario_Fixo)
+        frequencyMinutes: parseFloat(row[4]) || null, // Coluna E (Frequencia_Horas)
+        status: row[5], // Coluna F (Status)
+        lastSent: row[6] || null, // Coluna G (Ultimo_Envio)
+        uniqueId: row[7], // Coluna H (Unique_ID)
+      }));
+
     return {
       userId: userProfile[0],
       name: userProfile[1],
@@ -103,7 +133,8 @@ export async function getPatientData(
       email: userProfile[4],
       password: userProfile[5] || null,
       meals: userMeals,
-      waterLogs: userWaterLogs, // NOVO: Adiciona os dados de água ao retorno
+      waterLogs: userWaterLogs,
+      alarms: userAlarms, // NOVO: Adiciona os dados de alarmes ao retorno
     };
   } catch (error) {
     console.error("Error fetching patient data:", error);

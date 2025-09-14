@@ -45,8 +45,8 @@ const HeaderHome = () => {
               }`}
             >
               <img
-                alt="Logo da magalee"
                 src="/logo.svg"
+                alt="Logo da magalee"
                 className={`text-primary-foreground transition-all duration-500 ${
                   isScrolled ? "size-5" : "size-8"
                 }`}
@@ -118,6 +118,7 @@ const HeaderHome = () => {
                     <div className="from-primary to-primary/80 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg">
                       <img
                         src="/logo.svg"
+                        alt="Logo da magalee"
                         className="text-primary-foreground h-5 w-5"
                       />
                     </div>

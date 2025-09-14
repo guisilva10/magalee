@@ -21,10 +21,13 @@ import {
   ChevronLeft,
   CalendarIcon,
   ChevronRight,
+  Bell,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "../../_components/ui/button";
 import { signOut } from "next-auth/react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   Dialog,
   DialogContent, // Importe o DialogContent
@@ -43,6 +46,23 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/app/_components/ui/sheet";
+import { Switch } from "@/app/_components/ui/switch";
+import {
+  deleteAlarm,
+  updateAlarmStatus,
+} from "@/server/sheet-data/update-alarm";
+import { toast } from "sonner";
+import { EditAlarmSheet } from "./edit-alarm-sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/_components/ui/alert-dialog";
 
 // --- Interfaces ---
 interface Meal {
@@ -53,6 +73,17 @@ interface Meal {
   protein: number;
   fats: number;
 }
+
+interface Alarm {
+  date: string;
+  reminderText: string;
+  fixedTime: string | null;
+  frequencyMinutes: number | null; // Alterado de frequencyHours
+  status: string;
+  lastSent: string | null;
+  uniqueId: string;
+}
+
 interface WaterLog {
   date: string;
   amount_ml: number;
@@ -64,6 +95,7 @@ interface PatientData {
   proteinTarget: string;
   meals: Meal[];
   waterLogs: WaterLog[];
+  alarms: Alarm[];
 }
 
 interface DashboardClientProps {
@@ -74,6 +106,17 @@ type ConsumedTotals = {
   protein: number;
   carbs: number;
   fats: number;
+};
+
+const formatFrequency = (minutes: number | null): string | null => {
+  if (!minutes || minutes <= 0) {
+    return null;
+  }
+  if (minutes % 60 === 0) {
+    const hours = minutes / 60;
+    return `A cada ${hours} ${hours > 1 ? "horas" : "hora"}`;
+  }
+  return `A cada ${minutes} ${minutes > 1 ? "minutos" : "minuto"}`;
 };
 
 // --- Diet Status Logic ---
@@ -675,6 +718,9 @@ export default function DashboardClient({ data }: DashboardClientProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [alarms, setAlarms] = useState(data?.alarms || []);
+  const [editingAlarm, setEditingAlarm] = useState<Alarm | null>(null);
+  const [deletingAlarm, setDeletingAlarm] = useState<Alarm | null>(null);
 
   // NOVO: Funções para navegar entre os dias
   const handlePreviousDay = () => {
@@ -723,6 +769,49 @@ export default function DashboardClient({ data }: DashboardClientProps) {
     );
     return totalMl / 1000;
   }, [filteredWaterLogs]);
+
+  const [isPending, startTransition] = useTransition();
+
+  // NOVO: Efeito para sincronizar o estado com as props
+  useEffect(() => {
+    if (data?.alarms) {
+      setAlarms(data.alarms);
+    }
+  }, [data?.alarms]);
+
+  const handleStatusChange = (uniqueId: string, newStatus: boolean) => {
+    setAlarms((currentAlarms) =>
+      currentAlarms.map((alarm) =>
+        alarm.uniqueId === uniqueId
+          ? { ...alarm, status: newStatus ? "ativo" : "desativado" }
+          : alarm,
+      ),
+    );
+
+    startTransition(async () => {
+      const result = await updateAlarmStatus(uniqueId, newStatus);
+      toast.success("Status do alarme atualizado com sucesso!.");
+      if (!result.success) {
+        console.error("Falha ao atualizar o alarme:", result.message);
+        setAlarms(data?.alarms || []);
+        toast.error("Não foi possível atualizar o alarme. Tente novamente.");
+      }
+    });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deletingAlarm) return;
+
+    startTransition(async () => {
+      const result = await deleteAlarm(deletingAlarm.uniqueId);
+      if (result.success) {
+        toast.success("Alarme excluído com sucesso!.");
+      } else {
+        toast.error(`Erro: ${result.message}`);
+      }
+      setDeletingAlarm(null);
+    });
+  };
 
   if (!data) {
     return (
@@ -1012,6 +1101,79 @@ export default function DashboardClient({ data }: DashboardClientProps) {
             </div>
           </div>
         </div>
+        <div className="mt-6">
+          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="flex items-center space-x-3 p-6">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500">
+                <Bell className="size-4 text-white" />
+              </div>
+              <h3 className="font-semibold text-gray-900">
+                Meus Lembretes e Alarmes
+              </h3>
+            </div>
+            <div className="p-6 pt-0">
+              {alarms.length > 0 ? (
+                <ul className="divide-y divide-gray-200">
+                  {alarms.map((alarm) => {
+                    const frequencyText = formatFrequency(
+                      alarm.frequencyMinutes,
+                    );
+
+                    return (
+                      <li
+                        key={alarm.uniqueId}
+                        className="flex items-center justify-between py-4"
+                      >
+                        <div className="flex-1 pr-4">
+                          <p className="text-sm font-medium text-gray-800">
+                            {alarm.reminderText}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500">
+                              {alarm.fixedTime
+                                ? `Horário fixo: ${alarm.fixedTime}`
+                                : frequencyText}
+                            </p>
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={alarm.status === "ativo"}
+                            onCheckedChange={(newStatus) =>
+                              handleStatusChange(alarm.uniqueId, newStatus)
+                            }
+                            disabled={isPending} // Desabilita enquanto a action está rodando
+                            aria-label={`Ativar ou desativar o alarme: ${alarm.reminderText}`}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setEditingAlarm(alarm)}
+                          >
+                            <Pencil className="size-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
+                            onClick={() => setDeletingAlarm(alarm)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="flex h-32 items-center justify-center text-gray-500">
+                  Nenhum alarme configurado.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </main>
 
       {/* RENDERIZA O DIALOG CONTROLADO PELO ESTADO */}
@@ -1033,6 +1195,46 @@ export default function DashboardClient({ data }: DashboardClientProps) {
         data={data}
         consumedTotals={consumedTotals}
       />
+      <EditAlarmSheet
+        isOpen={!!editingAlarm}
+        onOpenChange={() => setEditingAlarm(null)}
+        alarm={editingAlarm}
+      />
+
+      {/* Diálogo de Confirmação de Exclusão */}
+      <AlertDialog
+        open={!!deletingAlarm}
+        onOpenChange={() => setDeletingAlarm(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O alarme{" "}
+              <span className="font-semibold">
+                "{deletingAlarm?.reminderText}"
+              </span>{" "}
+              será permanentemente removido da sua planilha.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingAlarm(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isPending}
+              className="bg-destructive hover:bg-destructive/90 text-white"
+            >
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Confirmar Exclusão"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

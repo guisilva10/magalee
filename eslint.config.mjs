@@ -24,6 +24,7 @@ const eslintConfig = [
       "@typescript-eslint/no-unused-vars": "off",
       "react/display-name": "off",
       "@next/next/no-img-element": "off",
+      "react/no-unescaped-entities": "off",
     },
   },
 ];
