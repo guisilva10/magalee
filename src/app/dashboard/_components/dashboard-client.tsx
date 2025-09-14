@@ -24,6 +24,7 @@ import {
   Bell,
   Pencil,
   Trash2,
+  SmileIcon,
 } from "lucide-react";
 import { Button } from "../../_components/ui/button";
 import { signOut } from "next-auth/react";
@@ -63,6 +64,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/_components/ui/alert-dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/app/_components/ui/tabs";
 
 // --- Interfaces ---
 interface Meal {
@@ -188,10 +195,7 @@ const ReportSheet = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="left"
-        className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-sm"
-      >
+      <SheetContent className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-sm">
         <SheetHeader>
           <div className="flex items-center space-x-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-500">
@@ -517,10 +521,7 @@ const ShareDialog = ({
         onOpenChange(open);
       }}
     >
-      <SheetContent
-        side="left"
-        className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-sm"
-      >
+      <SheetContent className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-sm">
         <SheetHeader>
           <SheetTitle>Compartilhar Relatório</SheetTitle>
           <SheetDescription>
@@ -639,14 +640,18 @@ const MobileMenu = ({
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-80 p-0">
+      <SheetContent className="w-80 p-0">
         <SheetHeader className="border-b p-4 text-left">
           <div className="flex items-center space-x-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500">
-              <Target className="h-5 w-5 text-white" />
+              <img
+                src="/logo.svg"
+                alt="Logo da Magalee"
+                className="h-5 w-5 text-white"
+              />
             </div>
             <SheetTitle className="text-xl font-bold text-gray-900">
-              NutriDash
+              Magalee App
             </SheetTitle>
           </div>
           <p className="pt-2 text-sm text-gray-600">Olá, {data.name}!</p>
@@ -860,14 +865,8 @@ export default function DashboardClient({ data }: DashboardClientProps) {
     <div className="min-h-screen bg-gray-50 py-16">
       <header className="fixed top-0 right-0 left-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="flex h-16 items-center justify-between px-6">
-          <div className="flex items-center space-x-4">
-            <MobileMenu
-              data={data}
-              onReportClick={() => setIsReportOpen(true)}
-              onSettingsClick={() => setIsSettingsOpen(true)}
-              onShareClick={() => setIsShareOpen(true)}
-            />
-            <div className="flex items-center space-x-3">
+          <div className="flex w-full items-center justify-between">
+            <div className="flex items-center">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500">
                 <img
                   src="/logo.svg"
@@ -875,11 +874,17 @@ export default function DashboardClient({ data }: DashboardClientProps) {
                   className="h-5 w-5 text-white"
                 />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Magalee App</h1>
+
+              <h1 className="ml-2 text-xl font-bold text-gray-900">
+                Magalee App
+              </h1>
             </div>
-            <div className="hidden text-sm text-gray-600 md:block">
-              Olá, {data.name}!
-            </div>
+            <MobileMenu
+              data={data}
+              onReportClick={() => setIsReportOpen(true)}
+              onSettingsClick={() => setIsSettingsOpen(true)}
+              onShareClick={() => setIsShareOpen(true)}
+            />
           </div>
           {/* BOTÕES DO HEADER DESKTOP */}
           <div className="hidden items-center space-x-3 md:flex">
@@ -915,13 +920,23 @@ export default function DashboardClient({ data }: DashboardClientProps) {
               <LogOutIcon className="text-destructive size-4" />
             </Button>
           </div>
-          <div className="block text-sm text-gray-600 md:hidden">
-            {data.name}
-          </div>
         </div>
       </header>
 
-      <main className="p-6">
+      <main className="px-8 py-6">
+        <div className="flex py-4">
+          <div className="text-2xl leading-tight font-bold lg:text-4xl">
+            <h1 className="flex items-center">
+              Olá, {data.name}{" "}
+              <span>
+                <SmileIcon className="ml-2 size-8 text-black" fill="#fcc800" />
+              </span>
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Seja bem vindo(a) ao Dashboard da Magalee
+            </p>
+          </div>
+        </div>
         <div className="mb-6 flex items-center justify-center space-x-4 rounded-lg border bg-white p-2 shadow-sm">
           <Button
             onClick={handlePreviousDay}
@@ -1064,115 +1079,134 @@ export default function DashboardClient({ data }: DashboardClientProps) {
         </div>
 
         <div className="mt-6">
-          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="flex items-center space-x-3 p-6">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
-                <Calendar className="size-4 text-white" />
-              </div>
-              <h3 className="font-semibold text-gray-900">Refeições de Hoje</h3>
-            </div>
-            <div className="p-6 pt-0">
-              {filteredMeals.length > 0 ? (
-                <ul className="divide-y divide-gray-200">
-                  {filteredMeals.map((meal, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center justify-between py-4"
-                    >
-                      <p className="flex-1 pr-4 text-sm font-medium text-gray-800">
-                        {meal.description}
-                      </p>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">
-                          {meal.calories} kcal
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {meal.carbs}g C, {meal.protein}g P, {meal.fats}g F
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="flex h-32 items-center justify-center text-gray-500">
-                  Nenhuma refeição encontrada para hoje.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="mt-6">
-          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="flex items-center space-x-3 p-6">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500">
-                <Bell className="size-4 text-white" />
-              </div>
-              <h3 className="font-semibold text-gray-900">
-                Meus Lembretes e Alarmes
-              </h3>
-            </div>
-            <div className="p-6 pt-0">
-              {alarms.length > 0 ? (
-                <ul className="divide-y divide-gray-200">
-                  {alarms.map((alarm) => {
-                    const frequencyText = formatFrequency(
-                      alarm.frequencyMinutes,
-                    );
+          <Tabs defaultValue="meals">
+            <TabsList className="w-full">
+              <TabsTrigger value="meals">Refeições</TabsTrigger>
+              <TabsTrigger value="alarms">Alarmes</TabsTrigger>
+            </TabsList>
 
-                    return (
-                      <li
-                        key={alarm.uniqueId}
-                        className="flex items-center justify-between py-4"
-                      >
-                        <div className="flex-1 pr-4">
-                          <p className="text-sm font-medium text-gray-800">
-                            {alarm.reminderText}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            <p className="text-xs text-gray-500">
-                              {alarm.fixedTime
-                                ? `Horário fixo: ${alarm.fixedTime}`
-                                : frequencyText}
+            <TabsContent value="meals">
+              <div className="mt-6">
+                <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+                  <div className="flex items-center space-x-3 p-6">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
+                      <Calendar className="size-4 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900">
+                      Refeições de Hoje
+                    </h3>
+                  </div>
+                  <div className="p-6 pt-0">
+                    {filteredMeals.length > 0 ? (
+                      <ul className="divide-y divide-gray-200">
+                        {filteredMeals.map((meal, index) => (
+                          <li
+                            key={index}
+                            className="flex items-center justify-between py-4"
+                          >
+                            <p className="flex-1 pr-4 text-sm font-medium text-gray-800">
+                              {meal.description}
                             </p>
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={alarm.status === "ativo"}
-                            onCheckedChange={(newStatus) =>
-                              handleStatusChange(alarm.uniqueId, newStatus)
-                            }
-                            disabled={isPending} // Desabilita enquanto a action está rodando
-                            aria-label={`Ativar ou desativar o alarme: ${alarm.reminderText}`}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => setEditingAlarm(alarm)}
-                          >
-                            <Pencil className="size-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-                            onClick={() => setDeletingAlarm(alarm)}
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <div className="flex h-32 items-center justify-center text-gray-500">
-                  Nenhum alarme configurado.
+                            <div className="text-right">
+                              <p className="font-semibold text-gray-900">
+                                {meal.calories} kcal
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {meal.carbs}g C, {meal.protein}g P, {meal.fats}g
+                                F
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="flex h-32 items-center justify-center text-gray-500">
+                        Nenhuma refeição encontrada para hoje.
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="alarms">
+              <div className="mt-6">
+                <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+                  <div className="flex items-center space-x-3 p-6">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500">
+                      <Bell className="size-4 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900">
+                      Meus Lembretes e Alarmes
+                    </h3>
+                  </div>
+                  <div className="p-6 pt-0">
+                    {alarms.length > 0 ? (
+                      <ul className="divide-y divide-gray-200">
+                        {alarms.map((alarm) => {
+                          const frequencyText = formatFrequency(
+                            alarm.frequencyMinutes,
+                          );
+
+                          return (
+                            <li
+                              key={alarm.uniqueId}
+                              className="flex items-center justify-between py-4"
+                            >
+                              <div className="flex-1 pr-4">
+                                <p className="text-sm font-medium text-gray-800">
+                                  {alarm.reminderText}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  <p className="text-xs text-gray-500">
+                                    {alarm.fixedTime
+                                      ? `Horário fixo: ${alarm.fixedTime}`
+                                      : frequencyText}
+                                  </p>
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Switch
+                                  checked={alarm.status === "ativo"}
+                                  onCheckedChange={(newStatus) =>
+                                    handleStatusChange(
+                                      alarm.uniqueId,
+                                      newStatus,
+                                    )
+                                  }
+                                  disabled={isPending} // Desabilita enquanto a action está rodando
+                                  aria-label={`Ativar ou desativar o alarme: ${alarm.reminderText}`}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => setEditingAlarm(alarm)}
+                                >
+                                  <Pencil className="size-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
+                                  onClick={() => setDeletingAlarm(alarm)}
+                                >
+                                  <Trash2 className="size-4" />
+                                </Button>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <div className="flex h-32 items-center justify-center text-gray-500">
+                        Nenhum alarme configurado.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
