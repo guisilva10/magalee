@@ -3,7 +3,7 @@
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-import { updateUserInSheet } from "./update-user-insheet";
+import { updateUserInSheet } from "../sheet-data/update-user-insheet";
 
 // 1. Definir o schema de validação com Zod
 const RegisterSchema = z.object({

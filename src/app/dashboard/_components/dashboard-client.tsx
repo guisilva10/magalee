@@ -100,6 +100,12 @@ interface PatientData {
   name: string;
   caloriesTarget: string;
   proteinTarget: string;
+  height: number;
+  weightTarget: number;
+  age: number;
+  imgTarget: number;
+  carbsTarget: string;
+  fatTarget: string;
   meals: Meal[];
   waterLogs: WaterLog[];
   alarms: Alarm[];

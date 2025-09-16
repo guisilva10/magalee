@@ -31,6 +31,12 @@ export interface PatientData {
   name: string;
   caloriesTarget: string;
   proteinTarget: string;
+  height: number;
+  weightTarget: number;
+  age: number;
+  imgTarget: number;
+  carbsTarget: string;
+  fatTarget: string;
   email?: string;
   password?: string;
   meals: Meal[];
@@ -56,7 +62,7 @@ export async function getPatientData(
     // 1. Fetch user profile data
     const profileResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Profile!A2:F",
+      range: "Profile!A2:L",
     });
 
     const profileRows = profileResponse.data.values || [];
@@ -129,8 +135,14 @@ export async function getPatientData(
       userId: userProfile[0], // Coluna A
       name: userProfile[1], // Coluna B
       email: userProfile[2], // Coluna C
+      weightTarget: userProfile[3],
+      height: userProfile[4],
+      age: userProfile[5],
+      imgTarget: userProfile[6],
       caloriesTarget: userProfile[7], // Coluna H
       proteinTarget: userProfile[8], // Coluna I
+      carbsTarget: userProfile[9],
+      fatTarget: userProfile[10],
       password: userProfile[11] || null, // Coluna L
       meals: userMeals,
       waterLogs: userWaterLogs,

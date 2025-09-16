@@ -1,6 +1,6 @@
+import { getPatientData } from "@/server/patient/get-patient-data";
 import DashboardClient from "./_components/dashboard-client";
 import { auth } from "@/services/auth";
-import { getPatientData } from "../_lib/google-sheet";
 
 export default async function DashboardPage() {
   const session = await auth();

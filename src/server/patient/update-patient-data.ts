@@ -24,6 +24,12 @@ interface PatientUpdateData {
   name: string;
   calories: number;
   protein: number;
+  height: number;
+  weightTarget: number;
+  age: number;
+  imgTarget?: number;
+  carbsTarget: string;
+  fatTarget: string;
 }
 
 export async function updatePatientData(
@@ -48,6 +54,11 @@ export async function updatePatientData(
     rowToUpdate.set("Name", data.name);
     rowToUpdate.set("Calories_target", data.calories);
     rowToUpdate.set("Protein_target", data.protein);
+    rowToUpdate.set("Weigth_target", data.weightTarget);
+    rowToUpdate.set("Height", data.height);
+    rowToUpdate.set("Age", data.age);
+    rowToUpdate.set("Carbs_target", data.carbsTarget);
+    rowToUpdate.set("Fats_target", data.fatTarget);
 
     await rowToUpdate.save();
 

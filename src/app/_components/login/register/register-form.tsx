@@ -16,8 +16,8 @@ import { Loader2 } from "lucide-react";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { registerPatient } from "@/server/sheet-data/register-patient";
 import Link from "next/link";
+import { registerPatient } from "@/server/patient/register-patient";
 
 function SubmitButton() {
   const { pending } = useFormStatus();

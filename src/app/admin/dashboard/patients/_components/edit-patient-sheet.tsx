@@ -13,7 +13,7 @@ import {
   SheetFooter,
 } from "@/app/_components/ui/sheet";
 import { Patient } from "@/server/sheet-data/get-sheet-all-data";
-import { updatePatientData } from "@/server/sheet-data/update-patient";
+import { updatePatientData } from "@/server/patient/update-patient";
 import { toast } from "sonner";
 
 interface EditPatientSheetProps {

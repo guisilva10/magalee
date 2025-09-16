@@ -15,7 +15,6 @@ import { Label } from "@/app/_components/ui/label";
 import { useEffect, useState, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 import { AlarmData, editAlarm } from "@/server/sheet-data/update-alarm";
-import { Alarm } from "@/app/_lib/google-sheet";
 import {
   Select,
   SelectContent,
@@ -24,6 +23,7 @@ import {
   SelectValue,
 } from "@/app/_components/ui/select";
 import { toast } from "sonner";
+import { Alarm } from "@/server/patient/get-patient-data";
 
 interface EditAlarmSheetProps {
   isOpen: boolean;
