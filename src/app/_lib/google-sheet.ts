@@ -60,7 +60,7 @@ export async function getPatientData(
     });
 
     const profileRows = profileResponse.data.values || [];
-    const userProfile = profileRows.find((row) => row[4] === email);
+    const userProfile = profileRows.find((row) => row[2] === email);
 
     if (!userProfile) {
       console.log("User not found in Profile sheet");
@@ -84,8 +84,8 @@ export async function getPatientData(
         date: row[1],
         description: row[2],
         calories: parseInt(row[3], 10) || 0,
-        carbs: parseInt(row[4], 10) || 0,
-        protein: parseInt(row[5], 10) || 0,
+        protein: parseInt(row[4], 10) || 0,
+        carbs: parseInt(row[5], 10) || 0,
         fats: parseInt(row[6], 10) || 0,
       }));
 
@@ -126,15 +126,15 @@ export async function getPatientData(
       }));
 
     return {
-      userId: userProfile[0],
-      name: userProfile[1],
-      caloriesTarget: userProfile[2],
-      proteinTarget: userProfile[3],
-      email: userProfile[4],
-      password: userProfile[5] || null,
+      userId: userProfile[0], // Coluna A
+      name: userProfile[1], // Coluna B
+      email: userProfile[2], // Coluna C
+      caloriesTarget: userProfile[7], // Coluna H
+      proteinTarget: userProfile[8], // Coluna I
+      password: userProfile[11] || null, // Coluna L
       meals: userMeals,
       waterLogs: userWaterLogs,
-      alarms: userAlarms, // NOVO: Adiciona os dados de alarmes ao retorno
+      alarms: userAlarms,
     };
   } catch (error) {
     console.error("Error fetching patient data:", error);

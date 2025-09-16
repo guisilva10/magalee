@@ -34,12 +34,12 @@ export async function getPatientByEmail(
     // Buscamos da coluna A até a F para garantir que email e senha sejam incluídos
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Profile!A2:F",
+      range: "Profile!A2:L",
     });
 
     const profileRows = response.data.values || [];
     // A coluna de email é a 'E', que corresponde ao índice 4 no array
-    const userProfile = profileRows.find((row) => row[4] === email);
+    const userProfile = profileRows.find((row) => row[2] === email);
 
     if (!userProfile) {
       console.log(`Paciente com email ${email} não encontrado.`);
@@ -48,12 +48,12 @@ export async function getPatientByEmail(
 
     // Retorna os dados do perfil necessários para a autenticação
     return {
-      userId: userProfile[0],
-      name: userProfile[1],
-      caloriesTarget: userProfile[2],
-      proteinTarget: userProfile[3],
-      email: userProfile[4],
-      password: userProfile[5] || null, // Garante que retorne null se a célula da senha estiver vazia
+      userId: userProfile[0], // Coluna A
+      name: userProfile[1], // Coluna B
+      email: userProfile[2], // Coluna C
+      caloriesTarget: userProfile[7], // Coluna H
+      proteinTarget: userProfile[8], // Coluna I
+      password: userProfile[11] || null, // Coluna L - Garante que retorne null se a célula da senha estiver vazia
     };
   } catch (error) {
     console.error("Error fetching patient data by email:", error);
