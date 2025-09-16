@@ -7,6 +7,13 @@ import {
   SheetFooter,
   SheetClose,
 } from "@/app/_components/ui/sheet";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/app/_components/ui/card";
 import { Button } from "@/app/_components/ui/button";
 import { Input } from "@/app/_components/ui/input";
 import { Label } from "@/app/_components/ui/label";
@@ -15,22 +22,17 @@ import { useState, useEffect, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 import { updatePatientData } from "@/server/patient/update-patient-data";
 import { toast } from "sonner";
-import { useSession } from "next-auth/react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/app/_components/ui/card";
 
+// Interface atualizada para corresponder à nova action getPatientData
 interface PatientData {
   userId: string;
   name: string;
   caloriesTarget: string;
   proteinTarget: string;
   height: number;
-  weightTarget: number;
+  weight: number; // NOVO
+  imc: number;
+  weightTarget: number; // Tipo corrigido de string para number
   age: number;
   imgTarget: number;
   carbsTarget: string;
@@ -48,11 +50,14 @@ export function SettingsSheet({
   onOpenChange,
   data,
 }: SettingsSheetProps) {
+  // Dados Pessoais
   const [name, setName] = useState(data.name);
-  const [height, setHeight] = useState(data.height);
-  const [weightTarget, setWeightTarget] = useState(data.weightTarget);
   const [age, setAge] = useState(data.age);
+  const [height, setHeight] = useState(data.height);
+  const [weight, setWeight] = useState(data.weight); // NOVO ESTADO
+  const [weightTarget, setWeightTarget] = useState(data.weightTarget);
 
+  // Metas de Macronutrientes
   const [calories, setCalories] = useState(data.caloriesTarget);
   const [protein, setProtein] = useState(data.proteinTarget);
   const [carbs, setCarbs] = useState(data.carbsTarget);
@@ -63,9 +68,10 @@ export function SettingsSheet({
   useEffect(() => {
     if (data) {
       setName(data.name);
-      setHeight(data.height);
-      setWeightTarget(data.weightTarget);
       setAge(data.age);
+      setHeight(data.height);
+      setWeight(data.weight);
+      setWeightTarget(data.weightTarget);
       setCalories(data.caloriesTarget);
       setProtein(data.proteinTarget);
       setCarbs(data.carbsTarget);
@@ -75,13 +81,14 @@ export function SettingsSheet({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
     startTransition(async () => {
+      // O payload agora inclui o novo campo 'weight'
       const result = await updatePatientData(data.userId, {
         name,
-        height: Number(height),
-        weightTarget: Number(weightTarget),
         age: Number(age),
+        height: Number(height),
+        weight: Number(weight), // NOVO
+        weightTarget: Number(weightTarget),
         calories: Number(calories),
         protein: Number(protein),
         carbsTarget: carbs,
@@ -117,7 +124,7 @@ export function SettingsSheet({
               <CardHeader>
                 <CardTitle>Dados Pessoais</CardTitle>
                 <CardDescription>
-                  Suas informações de perfil e medidas corporais.
+                  Suas informações de perfil, peso e medidas corporais.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -150,13 +157,15 @@ export function SettingsSheet({
                     disabled={isPending}
                   />
                 </div>
+                {/* NOVO CAMPO DE PESO ATUAL */}
                 <div className="space-y-2">
-                  <Label htmlFor="weightTarget">Peso Alvo (kg)</Label>
+                  <Label htmlFor="weight">Peso Atual (kg)</Label>
                   <Input
-                    id="weightTarget"
+                    id="weight"
                     type="number"
-                    value={weightTarget}
-                    onChange={(e) => setWeightTarget(Number(e.target.value))}
+                    step="0.1"
+                    value={weight}
+                    onChange={(e) => setWeight(Number(e.target.value))}
                     disabled={isPending}
                   />
                 </div>

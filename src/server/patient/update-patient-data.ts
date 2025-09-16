@@ -25,6 +25,7 @@ interface PatientUpdateData {
   calories: number;
   protein: number;
   height: number;
+  weight: number;
   weightTarget: number;
   age: number;
   imgTarget?: number;
@@ -59,6 +60,7 @@ export async function updatePatientData(
     rowToUpdate.set("Age", data.age);
     rowToUpdate.set("Carbs_target", data.carbsTarget);
     rowToUpdate.set("Fats_target", data.fatTarget);
+    rowToUpdate.set("Weight", data.weight);
 
     await rowToUpdate.save();
 

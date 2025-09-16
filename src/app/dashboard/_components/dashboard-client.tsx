@@ -70,6 +70,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/app/_components/ui/tabs";
+import { ReloadIcon } from "@radix-ui/react-icons";
+import { useRouter } from "next/navigation";
 
 // --- Interfaces ---
 interface Meal {
@@ -101,6 +103,8 @@ interface PatientData {
   caloriesTarget: string;
   proteinTarget: string;
   height: number;
+  weight: number;
+  imc: number;
   weightTarget: number;
   age: number;
   imgTarget: number;
@@ -182,6 +186,50 @@ const getDietStatus = (
   };
 };
 
+// --- NOVO: Lógica para status do IMC ---
+const getImcStatus = (imc: number) => {
+  if (imc < 18.5) {
+    return {
+      classification: "Abaixo do peso",
+      color: "text-yellow-800",
+      bgColor: "bg-yellow-100",
+    };
+  }
+  if (imc >= 18.5 && imc < 25) {
+    return {
+      classification: "Peso Normal",
+      color: "text-green-800",
+      bgColor: "bg-green-100",
+    };
+  }
+  if (imc >= 25 && imc < 30) {
+    return {
+      classification: "Sobrepeso",
+      color: "text-orange-800",
+      bgColor: "bg-orange-100",
+    };
+  }
+  if (imc >= 30 && imc < 35) {
+    return {
+      classification: "Obesidade I",
+      color: "text-red-800",
+      bgColor: "bg-red-100",
+    };
+  }
+  if (imc >= 35 && imc < 40) {
+    return {
+      classification: "Obesidade II",
+      color: "text-red-800",
+      bgColor: "bg-red-100",
+    };
+  }
+  return {
+    classification: "Obesidade III",
+    color: "text-red-800",
+    bgColor: "bg-red-100",
+  };
+};
+
 // --- COMPONENTE DO DIALOG REFATORADO ---
 // Agora ele apenas renderiza o conteúdo e é controlado por props
 const ReportSheet = ({
@@ -201,7 +249,7 @@ const ReportSheet = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-sm">
+      <SheetContent className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-lg">
         <SheetHeader>
           <div className="flex items-center space-x-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-500">
@@ -215,74 +263,54 @@ const ReportSheet = ({
             </div>
           </div>
         </SheetHeader>
-        <div className="p-6 pt-2">
-          <div className="grid grid-cols-1 gap-6">
-            <div className="rounded-lg border bg-gray-50 p-4">
-              <h3 className="font-semibold text-gray-800">
-                Status da Alimentação
-              </h3>
-              <p className={`mt-2 text-lg font-bold ${dietStatus.color}`}>
-                {dietStatus.status}
-              </p>
-              <p className="mt-1 text-sm text-gray-600">{dietStatus.message}</p>
-            </div>
-            <div className="rounded-lg border bg-gray-50 p-4">
-              <h3 className="font-semibold text-gray-800">Resumo de Metas</h3>
-              <ul className="mt-2 space-y-2 text-sm">
-                <li className="flex justify-between">
-                  <span>Calorias:</span>{" "}
-                  <span className="font-medium">
-                    {consumedTotals.calories} / {data.caloriesTarget} kcal
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Hidratação Total:</span>{" "}
-                  <span className="font-medium">
-                    {consumedWater.toFixed(1)} L
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Proteínas:</span>{" "}
-                  <span className="font-medium">
-                    {consumedTotals.protein} / {data.proteinTarget} g
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Carboidratos:</span>{" "}
-                  <span className="font-medium">{consumedTotals.carbs} g</span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Gorduras:</span>{" "}
-                  <span className="font-medium">{consumedTotals.fats} g</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-6">
+        <div className="flex-1 space-y-6 overflow-y-auto py-4 pr-2">
+          <div className="rounded-lg border bg-gray-50 p-4">
             <h3 className="font-semibold text-gray-800">
-              Refeições Registradas
+              Status da Alimentação
             </h3>
-            <div className="mt-2 max-h-48 overflow-y-auto rounded-lg border bg-gray-50 pr-2">
-              <ul className="divide-y">
-                {data.meals.length > 0 ? (
-                  data.meals.map((meal, index) => (
-                    <li
-                      key={index}
-                      className="flex justify-between p-3 text-sm"
-                    >
-                      <span>{meal.description}</span>
-                      <span className="font-medium text-gray-700">
-                        {meal.calories} kcal
-                      </span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="p-3 text-sm text-gray-500">
-                    Nenhuma refeição registrada.
-                  </li>
-                )}
-              </ul>
-            </div>
+            <p className={`mt-2 text-lg font-bold ${dietStatus.color}`}>
+              {dietStatus.status}
+            </p>
+            <p className="mt-1 text-sm text-gray-600">{dietStatus.message}</p>
+          </div>
+
+          <div className="rounded-lg border bg-gray-50 p-4">
+            <h3 className="font-semibold text-gray-800">Resumo de Metas</h3>
+            <ul className="mt-2 space-y-2 text-sm">
+              <li className="flex justify-between">
+                <span>Calorias:</span>{" "}
+                <span className="font-medium">
+                  {consumedTotals.calories} / {data.caloriesTarget} kcal
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <span>Proteínas:</span>{" "}
+                <span className="font-medium">
+                  {consumedTotals.protein} / {data.proteinTarget} g
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <span>Carboidratos:</span>{" "}
+                <span className="font-medium">{consumedTotals.carbs} g</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Gorduras:</span>{" "}
+                <span className="font-medium">{consumedTotals.fats} g</span>
+              </li>
+              <li className="mt-2 flex justify-between border-t pt-2">
+                <span>Hidratação Total:</span>{" "}
+                <span className="font-medium">{consumedWater} L</span>
+              </li>
+              {/* NOVO: Stats de Peso adicionadas ao relatório */}
+              <li className="flex justify-between">
+                <span>Peso Atual:</span>{" "}
+                <span className="font-medium">{data.weight} kg</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Meta de Peso:</span>{" "}
+                <span className="font-medium">{data.weightTarget} kg</span>
+              </li>
+            </ul>
           </div>
         </div>
       </SheetContent>
@@ -475,11 +503,13 @@ const ShareDialog = ({
   onOpenChange,
   data,
   consumedTotals,
+  consumedWater, // NOVO
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   data: PatientData;
   consumedTotals: ConsumedTotals;
+  consumedWater: number; // NOVO
 }) => {
   const shareableCardRef = useRef<HTMLDivElement>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -527,7 +557,7 @@ const ShareDialog = ({
         onOpenChange(open);
       }}
     >
-      <SheetContent className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-sm">
+      <SheetContent className="flex w-full flex-col overflow-y-auto px-4 py-4 sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Compartilhar Relatório</SheetTitle>
           <SheetDescription>
@@ -546,37 +576,72 @@ const ShareDialog = ({
           ) : (
             <div
               ref={shareableCardRef}
-              className="rounded-lg border p-6 shadow-sm"
+              className="rounded-lg border bg-gray-100 p-6 shadow-sm"
             >
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-primary text-xl font-bold">
-                  Resumo Diário
+                  Resumo do Dia
                 </h3>
-                <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold">
+                <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-gray-800">
                   {data.name}
                 </span>
               </div>
-              <div className="mb-4 grid grid-cols-2 gap-4">
-                <div className="rounded-md bg-white/70 p-3 text-center">
-                  <p className="text-xs text-gray-600">Calorias</p>
-                  <p className="text-lg font-bold text-green-600">
-                    {consumedTotals.calories}
-                    <span className="text-sm text-gray-500">
-                      /{data.caloriesTarget} kcal
-                    </span>
-                  </p>
+
+              {/* Layout de Métricas Atualizado */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-md bg-white/80 p-3 text-center">
+                    <p className="text-xs text-gray-600">Calorias</p>
+                    <p className="text-lg font-bold text-green-600">
+                      {consumedTotals.calories}
+                      <span className="text-sm font-normal text-gray-500">
+                        /{data.caloriesTarget} kcal
+                      </span>
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-white/80 p-3 text-center">
+                    <p className="text-xs text-gray-600">Proteínas</p>
+                    <p className="text-lg font-bold text-orange-600">
+                      {consumedTotals.protein}
+                      <span className="text-sm font-normal text-gray-500">
+                        /{data.proteinTarget} g
+                      </span>
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-white/80 p-3 text-center">
+                    <p className="text-xs text-gray-600">Carboidratos</p>
+                    <p className="text-lg font-bold text-blue-600">
+                      {consumedTotals.carbs}
+                      <span className="text-sm font-normal text-gray-500">
+                        {" "}
+                        g
+                      </span>
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-white/80 p-3 text-center">
+                    <p className="text-xs text-gray-600">Gorduras</p>
+                    <p className="text-lg font-bold text-red-600">
+                      {consumedTotals.fats}
+                      <span className="text-sm font-normal text-gray-500">
+                        {" "}
+                        g
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <div className="rounded-md bg-white/70 p-3 text-center">
-                  <p className="text-xs text-gray-600">Proteínas</p>
-                  <p className="text-lg font-bold text-orange-600">
-                    {consumedTotals.protein}
-                    <span className="text-sm text-gray-500">
-                      /{data.proteinTarget} g
+                <div className="rounded-md bg-white/80 p-3 text-center">
+                  <p className="text-xs text-gray-600">Hidratação</p>
+                  <p className="text-lg font-bold text-sky-600">
+                    {consumedWater}
+                    <span className="text-sm font-normal text-gray-500">
+                      {" "}
+                      L
                     </span>
                   </p>
                 </div>
               </div>
-              <div className="rounded-md bg-white/70 p-4">
+
+              <div className="mt-4 rounded-md bg-white/80 p-4">
                 <h4 className={`text-md font-bold ${dietStatus.color}`}>
                   {dietStatus.status}
                 </h4>
@@ -584,7 +649,7 @@ const ShareDialog = ({
                   {dietStatus.message}
                 </p>
               </div>
-              <p className="mt-4 text-center text-xs text-teal-600">
+              <p className="mt-4 text-center text-xs font-semibold text-teal-600">
                 Gerado por Magalee App
               </p>
             </div>
@@ -724,7 +789,7 @@ const formatDateForDisplay = (date: Date): string => {
 
 // --- COMPONENTE PRINCIPAL AJUSTADO ---
 export default function DashboardClient({ data }: DashboardClientProps) {
-  // Estado para controlar a abertura/fechamento do dialog
+  const router = useRouter();
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -867,6 +932,14 @@ export default function DashboardClient({ data }: DashboardClientProps) {
   const totalMacros =
     consumedTotals.carbs + consumedTotals.protein + consumedTotals.fats;
 
+  // NOVO: Cálculo para o card de evolução de peso
+  const imcStatus = getImcStatus(data.imc);
+  const weightDifference = data.weight - data.weightTarget;
+
+  const handleRefreshPage = () => {
+    router.refresh();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-16">
       <header className="fixed top-0 right-0 left-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
@@ -931,16 +1004,24 @@ export default function DashboardClient({ data }: DashboardClientProps) {
 
       <main className="px-8 py-6">
         <div className="flex py-4">
-          <div className="text-2xl leading-tight font-bold lg:text-4xl">
-            <h1 className="flex items-center">
-              Olá, {data.name}{" "}
-              <span>
-                <SmileIcon className="ml-2 size-8 text-black" fill="#fcc800" />
-              </span>
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Seja bem vindo(a) ao Dashboard da Magalee
-            </p>
+          <div className="flex w-full items-center justify-between text-2xl leading-tight font-bold lg:text-4xl">
+            <div className="flex flex-col items-center">
+              <h1 className="flex items-center">
+                Olá, {data.name}{" "}
+                <span>
+                  <SmileIcon
+                    className="ml-2 size-8 text-black"
+                    fill="#fcc800"
+                  />
+                </span>
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                Seja bem vindo(a) ao Dashboard da Magalee
+              </p>
+            </div>
+            <Button size="icon" variant="outline" onClick={handleRefreshPage}>
+              <ReloadIcon />
+            </Button>
           </div>
         </div>
         <div className="mb-6 flex items-center justify-center space-x-4 rounded-lg border bg-white p-2 shadow-sm">
@@ -1062,6 +1143,8 @@ export default function DashboardClient({ data }: DashboardClientProps) {
               )}
             </div>
           </div>
+
+          {/* --- CARD DE EVOLUÇÃO DE PESO - ALTERADO --- */}
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center space-x-3 p-6">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
@@ -1072,13 +1155,65 @@ export default function DashboardClient({ data }: DashboardClientProps) {
                   Evolução do Peso
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Progresso dos últimos 7 dias
+                  Seu peso atual, meta e IMC.
                 </p>
               </div>
             </div>
             <div className="p-6 pt-0">
-              <div className="flex h-32 items-center justify-center text-gray-500">
-                Gráfico de evolução em breve
+              <div className="space-y-4">
+                <div className="flex items-center justify-around rounded-lg bg-gray-50 p-4 text-center">
+                  <div className="flex flex-col items-center">
+                    <p className="text-sm text-gray-500">Peso Atual</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {data.weight}
+                      <span className="text-base font-normal text-gray-500">
+                        {" "}
+                        kg
+                      </span>
+                    </p>
+                  </div>
+                  <div className="h-12 border-l border-gray-200"></div>
+                  <div className="flex flex-col items-center">
+                    <p className="text-sm text-gray-500">Meta</p>
+                    <p className="text-2xl font-bold text-teal-600">
+                      {data.weightTarget}
+                      <span className="text-base font-normal text-gray-500">
+                        {" "}
+                        kg
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Seu IMC</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {data.imc}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm font-semibold ${imcStatus.color} ${imcStatus.bgColor}`}
+                  >
+                    {imcStatus.classification}
+                  </span>
+                </div>
+
+                <div className="text-center text-sm text-gray-600">
+                  {weightDifference > 0 ? (
+                    <p>
+                      Faltam{" "}
+                      <span className="font-bold text-teal-600">
+                        {weightDifference} kg
+                      </span>{" "}
+                      para você atingir sua meta. Continue assim!
+                    </p>
+                  ) : (
+                    <p className="font-semibold text-green-600">
+                      Parabéns! Você atingiu ou superou sua meta de peso! 🎉
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1234,6 +1369,7 @@ export default function DashboardClient({ data }: DashboardClientProps) {
         onOpenChange={setIsShareOpen}
         data={data}
         consumedTotals={consumedTotals}
+        consumedWater={consumedWaterLiters}
       />
       <EditAlarmSheet
         isOpen={!!editingAlarm}
