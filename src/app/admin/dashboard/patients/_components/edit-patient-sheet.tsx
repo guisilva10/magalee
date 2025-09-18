@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { Button } from "@/app/_components/ui/button";
 import { Input } from "@/app/_components/ui/input";
-import { Label } from "@/app/_components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -11,10 +10,24 @@ import {
   SheetHeader,
   SheetTitle,
   SheetFooter,
+  SheetClose,
 } from "@/app/_components/ui/sheet";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/app/_components/ui/form";
 import { Patient } from "@/server/sheet-data/get-sheet-all-data";
-import { updatePatientData } from "@/server/patient/update-patient";
+import { updatePatientData } from "../../../../../server/patient/update-patient";
 import { toast } from "sonner";
+import { ScrollArea } from "@/app/_components/ui/scroll-area";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Card } from "@/app/_components/ui/card";
 
 interface EditPatientSheetProps {
   isOpen: boolean;
@@ -22,125 +35,247 @@ interface EditPatientSheetProps {
   patient: Patient | null;
 }
 
+const formSchema = z.object({
+  name: z
+    .string()
+    .min(2, { message: "O nome deve ter pelo menos 2 caracteres." }),
+  weight: z
+    .number("Deve ser um número.")
+    .positive({ message: "O peso deve ser positivo." }),
+  height: z
+    .number("Deve ser um número.")
+    .positive({ message: "A altura deve ser positiva." }),
+  age: z
+    .number("Deve ser um número.")
+    .positive({ message: "A idade deve ser positiva." }),
+  caloriesTarget: z.string().min(1, { message: "Campo obrigatório." }),
+  proteinTarget: z.string().min(1, { message: "Campo obrigatório." }),
+  carbsTarget: z.string().min(1, { message: "Campo obrigatório." }),
+  fatTarget: z.string().min(1, { message: "Campo obrigatório." }),
+  weightTarget: z
+    .number("Deve ser um número.")
+    .positive({ message: "A meta de peso deve ser positiva." }),
+});
+
+type FormSchema = z.infer<typeof formSchema>;
+
 export function EditPatientSheet({
   isOpen,
   onOpenChange,
   patient,
 }: EditPatientSheetProps) {
-  const [isPending, startTransition] = useTransition();
-  const [feedback, setFeedback] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
-  const [editFormData, setEditFormData] = useState({
-    name: "",
-    calories: 0,
-    protein: 0,
+  const [isPending, startTransition] = useTransition(); // 2. Configuração do formulário com react-hook-form e Zod
+
+  const form = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      caloriesTarget: "",
+      proteinTarget: "",
+      carbsTarget: "",
+      fatTarget: "",
+      height: 0,
+      weight: 0,
+      age: 0,
+      weightTarget: 0,
+    },
   });
 
   useEffect(() => {
     if (patient) {
-      setEditFormData({
-        name: patient.name,
-        calories: patient.calories,
-        protein: patient.protein,
+      form.reset({
+        name: patient.name || "",
+        weight: patient.weight || 0,
+        height: patient.height || 0,
+        age: patient.age || 0,
+        caloriesTarget: patient.caloriesTarget || "",
+        proteinTarget: patient.proteinTarget || "",
+        carbsTarget: patient.carbsTarget || "",
+        fatTarget: patient.fatTarget || "",
+        weightTarget: patient.weightTarget || 0,
       });
-      setFeedback(null);
     }
-  }, [patient]);
+  }, [patient, form]); // 4. Função de submissão do formulário
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditFormData((prev) => ({
-      ...prev,
-      [name]: name === "name" ? value : Number(value),
-    }));
-  };
-
-  const handleSaveChanges = () => {
+  function onSubmit(values: FormSchema) {
     if (!patient) return;
-    setFeedback(null);
 
     startTransition(async () => {
-      const result = await updatePatientData(patient.userId, editFormData);
+      const result = await updatePatientData(patient.userId, values);
       if (result.success) {
-        toast.success(`${result.message}`);
-        setTimeout(() => onOpenChange(false), 1500);
+        toast.success(result.message || "Paciente atualizado com sucesso!");
+        onOpenChange(false);
       } else {
-        toast.error(`${result.error}`);
+        toast.error(result.error || "Falha ao atualizar o paciente.");
       }
     });
-  };
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="px-6 py-4">
-        {patient && (
-          <>
-            <SheetHeader>
-              <SheetTitle>Editar Paciente</SheetTitle>
-              <SheetDescription>
-                Altere as informações de {patient.name} aqui. Clique em salvar
-                quando terminar.
-              </SheetDescription>
-            </SheetHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name">Nome</Label>
-                <Input
-                  id="name"
+      <SheetContent className="flex w-full flex-col overflow-y-auto lg:max-w-lg">
+        <SheetHeader>
+          <SheetTitle>Editar Perfil</SheetTitle>
+          <SheetDescription>
+            Altere as informações de {patient?.name || "paciente"}{" "}
+          </SheetDescription>
+        </SheetHeader>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex h-full flex-col px-6 py-4"
+          >
+            <div className="space-y-4 py-4">
+              <Card className="px-4">
+                <h3 className="text-muted-foreground mb-4 text-sm font-medium">
+                  Dados Pessoais
+                </h3>
+                <FormField
+                  control={form.control}
                   name="name"
-                  value={editFormData.name}
-                  onChange={handleFormChange}
-                  className="col-span-3"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="calories">Calorias (kcal)</Label>
-                <Input
-                  id="calories"
-                  name="calories"
-                  type="number"
-                  value={editFormData.calories}
-                  onChange={handleFormChange}
-                  className="col-span-3"
+                {/* Repetir para os outros campos */}
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="weight"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Peso (kg)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="height"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Altura (cm)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="age"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Idade</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </Card>
+              <Card className="px-4">
+                <h3 className="text-muted-foreground mb-4 pt-4 text-sm font-medium">
+                  Metas Nutricionais
+                </h3>
+                <FormField
+                  control={form.control}
+                  name="caloriesTarget"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Calorias (kcal)</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="protein">Proteína (g)</Label>
-                <Input
-                  id="protein"
-                  name="protein"
-                  type="number"
-                  value={editFormData.protein}
-                  onChange={handleFormChange}
-                  className="col-span-3"
+                <FormField
+                  control={form.control}
+                  name="proteinTarget"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Proteínas (g)</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="userId">User ID</Label>
-                <Input
-                  id="userId"
-                  value={patient.userId.split("@")[0]}
-                  disabled
-                  className="col-span-3"
+                <FormField
+                  control={form.control}
+                  name="carbsTarget"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Carboidratos (g)</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
+                <FormField
+                  control={form.control}
+                  name="fatTarget"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gorduras (g)</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="weightTarget"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meta de Peso (kg)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) => {
+                            // Garante que o valor passado para o form state é um número
+                            field.onChange(e.target.valueAsNumber || 0);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </Card>
             </div>
-            <SheetFooter className="flex-col">
-              <Button onClick={handleSaveChanges} disabled={isPending}>
+            <SheetFooter className="px-6 pb-4">
+              <SheetClose asChild>
+                <Button size="sm" variant="outline">
+                  Cancelar
+                </Button>
+              </SheetClose>
+              <Button type="submit" disabled={isPending} className="w-full">
                 {isPending ? "Salvando..." : "Salvar Alterações"}
               </Button>
-              {feedback && (
-                <p
-                  className={`mt-2 text-sm ${feedback.type === "success" ? "text-green-600" : "text-red-600"}`}
-                >
-                  {feedback.message}
-                </p>
-              )}
             </SheetFooter>
-          </>
-        )}
+          </form>
+        </Form>
       </SheetContent>
     </Sheet>
   );

@@ -5,6 +5,7 @@ import {
   Patient,
   Meal,
   WaterLog,
+  DietStatus,
 } from "@/server/sheet-data/get-sheet-all-data"; // Ajuste o caminho
 import { format, isSameDay, subDays, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -48,14 +49,8 @@ import { SendMonthlyReport } from "./send-report";
 
 interface PatientDetailClientProps {
   patient: Patient;
-  allMeals: Meal[];
-  allWaterLogs: WaterLog[];
-  dietStatus: {
-    text: string;
-    variant: "success" | "warning" | "destructive" | "default";
-  };
+  dietStatus: DietStatus;
 }
-
 const parseDateAsLocal = (dateString: string): Date => {
   const [year, month, day] = dateString.split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -63,10 +58,10 @@ const parseDateAsLocal = (dateString: string): Date => {
 
 export function PatientDetailClient({
   patient,
-  allMeals,
   dietStatus,
-  allWaterLogs,
 }: PatientDetailClientProps) {
+  const allMeals = patient.meals || [];
+  const allWaterLogs = patient.waterLogs || [];
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const dailyMeals = useMemo(() => {
@@ -130,11 +125,11 @@ export function PatientDetailClient({
     <main className="max-w-screen flex-1 px-4 py-6">
       <div className="mb-6 flex items-center justify-between border-b">
         <div className="mb-8 flex flex-col">
-          <h1 className="mb-2 text-3xl font-bold text-gray-800">
+          <h1 className="mb-2 text-3xl font-bold">
             Relatório de {patient.name}
           </h1>
           <div className="flex flex-col">
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Análise detalhada de consumo e macronutrientes.
             </p>
 
@@ -269,7 +264,6 @@ export function PatientDetailClient({
                 </Card>
               </div>
 
-              {/* --- 2. SUBSTITUINDO A LISTA PELA TABELA --- */}
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -278,6 +272,7 @@ export function PatientDetailClient({
                     <TableHead className="text-right">Carbs (g)</TableHead>
                     <TableHead className="text-right">Proteínas (g)</TableHead>
                     <TableHead className="text-right">Gorduras (g)</TableHead>
+                    <TableHead>Categoria</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -297,6 +292,11 @@ export function PatientDetailClient({
                       </TableCell>
                       <TableCell className="text-right">
                         {meal.fat.toFixed(1)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {meal.CategoryName || "Sem Categoria"}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))}

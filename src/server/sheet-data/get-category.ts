@@ -31,67 +31,6 @@ async function getAuthenticatedDoc(): Promise<GoogleSpreadsheet> {
   return doc;
 }
 
-// --- FUNÇÃO ATUALIZADA PARA AGRUPAR DADOS ---
-export async function getMealDataGroupedByCategory(): Promise<CategoryData[]> {
-  try {
-    const doc = await getAuthenticatedDoc();
-    const mealsSheet = doc.sheetsByTitle["Meals"];
-    const patientsSheet = doc.sheetsByTitle["Profile"];
-
-    if (!mealsSheet || !patientsSheet) {
-      throw new Error("Planilha 'Meals' ou 'Profile' não encontrada.");
-    }
-
-    const [mealRows, patientRows] = await Promise.all([
-      mealsSheet.getRows(),
-      patientsSheet.getRows(),
-    ]);
-
-    const patientIdToNameMap = new Map(
-      patientRows.map((row) => [row.get("User_ID"), row.get("Name")]),
-    );
-
-    const categoriesMap = new Map<string, MealItem[]>();
-
-    mealRows.forEach((row) => {
-      const description = row.get("Meal_description");
-      const calories = parseFloat(row.get("Calories"));
-
-      if (!description || isNaN(calories)) {
-        return; // Pula linhas inválidas
-      }
-
-      // --- MUDANÇA PRINCIPAL: Usa a função inteligente para obter a categoria ---
-      const categoryName = getCategoryFromDescription(description);
-
-      const patientId = row.get("User_ID");
-      const patientName = patientIdToNameMap.get(patientId) || "Desconhecido";
-
-      const mealItem: MealItem = { patientName, Calories: calories };
-
-      if (!categoriesMap.has(categoryName)) {
-        categoriesMap.set(categoryName, []);
-      }
-      categoriesMap.get(categoryName)!.push(mealItem);
-    });
-
-    const result: CategoryData[] = Array.from(
-      categoriesMap,
-      ([categoryName, meals]) => ({
-        categoryName,
-        meals,
-        mealCount: meals.length,
-        totalCalories: meals.reduce((sum, meal) => sum + meal.Calories, 0),
-      }),
-    );
-
-    return result.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
-  } catch (err) {
-    console.error("Erro ao agrupar dados de refeições por categoria:", err);
-    return [];
-  }
-}
-
 export async function deleteCategory(categoryName: string) {
   try {
     const doc = await getAuthenticatedDoc();

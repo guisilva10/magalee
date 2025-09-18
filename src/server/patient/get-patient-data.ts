@@ -36,7 +36,7 @@ export interface PatientData {
   imc: number;
   weightTarget: number;
   age: number;
-  imgTarget: number;
+  imcTarget: number;
   carbsTarget: string;
   fatTarget: string;
   email?: string;
@@ -141,7 +141,7 @@ export async function getPatientData(
       weightTarget: userProfile[3],
       height: userProfile[4],
       age: userProfile[5],
-      imgTarget: userProfile[6],
+      imcTarget: userProfile[6],
       caloriesTarget: userProfile[7], // Coluna H
       proteinTarget: userProfile[8], // Coluna I
       carbsTarget: userProfile[9],

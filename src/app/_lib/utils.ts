@@ -1,3 +1,4 @@
+import { Patient } from "@/server/sheet-data/get-sheet-all-data";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -38,4 +39,37 @@ export function getCategoryFromDescription(description: string): string {
 
   // Categoria padrão para refeições não identificadas.
   return "Outras Refeições";
+}
+
+interface PatientConsumption {
+  calories: number; // Meta de calorias
+  protein: number; // Meta de proteína
+  consumedCaloriesToday: number;
+  consumedProteinToday: number;
+}
+
+/**
+ * Calcula o status nutricional de um paciente com base no consumo diário versus a meta.
+ * @param patient O objeto do paciente com metas e consumo.
+ * @returns 'green' se ambas as metas foram atingidas, 'red' se nenhuma foi, e 'yellow' caso contrário.
+ */
+export function getPatientStatus(patient: Patient): "green" | "yellow" | "red" {
+  // Converte as metas de string para número para a comparação.
+  const targetCalories = parseFloat(patient.caloriesTarget) || 0;
+  const targetProtein = parseFloat(patient.proteinTarget) || 0; // Se a meta de calorias ou proteínas for 0, o paciente está fora da meta.
+
+  if (targetCalories <= 0 || targetProtein <= 0) {
+    return "red";
+  }
+
+  const caloriesOk = patient.consumedCaloriesToday >= targetCalories;
+  const proteinOk = patient.consumedProteinToday >= targetProtein;
+
+  if (caloriesOk && proteinOk) {
+    return "green";
+  }
+  if (!caloriesOk && !proteinOk) {
+    return "red";
+  }
+  return "yellow";
 }

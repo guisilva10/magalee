@@ -107,7 +107,7 @@ interface PatientData {
   imc: number;
   weightTarget: number;
   age: number;
-  imgTarget: number;
+  imcTarget: number;
   carbsTarget: string;
   fatTarget: string;
   meals: Meal[];

@@ -5,23 +5,17 @@ import { PatientDetailClient } from "./_components/patient-detail-client";
 export default async function PatientDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  // Ajustado para receber string, que é o padrão do Next.js
+  params: { id: string };
 }) {
-  // O ID vem decodificado da URL, então decodificamos
-  const userId = decodeURIComponent((await params).id);
-  const { patient, allMeals, dietStatus, allWaterLogs } =
-    await getPatientDetails(userId);
+  // O ID vem da URL, então o decodificamos
+  const userId = decodeURIComponent(params.id);
+  // Chama a action atualizada
+  const { patient, dietStatus, error } = await getPatientDetails(userId);
 
-  if (!patient) {
+  if (!patient || error) {
     notFound();
-  }
+  } // Passa o paciente completo e o status da dieta para o componente de cliente
 
-  return (
-    <PatientDetailClient
-      allWaterLogs={allWaterLogs}
-      patient={patient}
-      allMeals={allMeals}
-      dietStatus={dietStatus}
-    />
-  );
+  return <PatientDetailClient patient={patient} dietStatus={dietStatus} />;
 }

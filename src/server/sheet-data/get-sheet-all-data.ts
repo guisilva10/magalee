@@ -6,6 +6,16 @@ import { startOfDay, endOfDay, subDays } from "date-fns";
 import { toDate } from "date-fns-tz";
 
 // --- TIPOS DE DADOS (Interfaces) ---
+export interface Alarm {
+  uniqueId: string;
+  title: string;
+  time: string;
+  frequencyMinutes: number;
+  isActive: boolean;
+  lastSent: string;
+  date: string;
+}
+
 export interface Meal {
   userId?: string;
   patientName: string;
@@ -15,6 +25,7 @@ export interface Meal {
   protein: number;
   fat: number;
   Date: string;
+  CategoryName?: string;
 }
 
 export interface WaterLog {
@@ -26,9 +37,23 @@ export interface WaterLog {
 export interface Patient {
   userId: string;
   name: string;
-  calories: number;
-  protein: number;
-  avgWaterMl?: number;
+  email?: string;
+  weightTarget: number;
+  height: number;
+  age: number;
+  imc: number;
+  caloriesTarget: string;
+  proteinTarget: string;
+  carbsTarget: string;
+  fatTarget: string;
+  password?: string;
+  weight: number;
+  createdAt: string;
+  meals: Meal[];
+  waterLogs: WaterLog[];
+  alarms: Alarm[];
+  consumedCaloriesToday: number;
+  consumedProteinToday: number;
 }
 
 export interface DashboardData {
@@ -40,9 +65,8 @@ export interface DashboardData {
   recentMeals: Meal[];
   error: string | null;
 }
-
 // --- FUNÇÃO DE AUTENTICAÇÃO E CONEXÃO ---
-async function getAuthenticatedDoc(): Promise<GoogleSpreadsheet> {
+export async function getAuthenticatedDoc(): Promise<GoogleSpreadsheet> {
   const serviceAccountAuth = new JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n"), // Corrige a formatação da chave
@@ -57,125 +81,177 @@ async function getAuthenticatedDoc(): Promise<GoogleSpreadsheet> {
   return doc;
 }
 
-// --- FUNÇÃO PRINCIPAL QUE BUSCA OS DADOS ---
 export async function getDashboardData(): Promise<DashboardData> {
   try {
     const doc = await getAuthenticatedDoc();
-
     const patientsSheet = doc.sheetsByTitle["Profile"];
     const mealsSheet = doc.sheetsByTitle["Meals"];
     const waterSheet = doc.sheetsByTitle["Water"];
+    const alarmsSheet = doc.sheetsByTitle["Alarms"];
+    const categoriesSheet = doc.sheetsByTitle["Categories"];
 
-    if (!patientsSheet || !mealsSheet || !waterSheet) {
+    if (
+      !patientsSheet ||
+      !mealsSheet ||
+      !waterSheet ||
+      !alarmsSheet ||
+      !categoriesSheet
+    ) {
       throw new Error(
-        "Uma ou mais planilhas (Profile, Meals, Water) não foram encontradas.",
+        "Uma ou mais planilhas (Profile, Meals, Water, Alarms) não foram encontradas.",
       );
     }
 
-    const [patientRows, mealRows, waterRows] = await Promise.all([
-      patientsSheet.getRows(),
-      mealsSheet.getRows(),
-      waterSheet.getRows(),
-    ]);
+    const [patientRows, mealRows, waterRows, alarmRows, categoryRows] =
+      await Promise.all([
+        patientsSheet.getRows(),
+        mealsSheet.getRows(),
+        waterSheet.getRows(),
+        alarmsSheet.getRows(),
+        categoriesSheet.getRows(),
+      ]);
 
-    // Mapeia os logs de água por usuário para otimizar a busca
-    const waterLogsByUser = new Map<string, any[]>();
-    waterRows.forEach((row) => {
-      const userId = row.get("User_ID");
-      if (userId) {
-        if (!waterLogsByUser.has(userId)) {
-          waterLogsByUser.set(userId, []);
-        }
-        waterLogsByUser.get(userId)?.push(row);
+    const categoryMap = new Map<string, string>();
+    categoryRows.forEach((row) => {
+      const id = row.get("CategoryID");
+      const name = row.get("CategoryName");
+      if (id && name) {
+        categoryMap.set(id, name);
       }
     });
 
-    const allPatients: Patient[] = patientRows.map((row) => {
+    // 1. Agrupar refeições, águas e alarmes por userId para eficiência
+    const mealsByUser = new Map<string, Meal[]>();
+    mealRows.forEach((row) => {
       const userId = row.get("User_ID");
-      const patientWaterRows = waterLogsByUser.get(userId) || [];
+      if (!userId) return;
+      if (!mealsByUser.has(userId)) mealsByUser.set(userId, []);
 
-      // Calcula a média de consumo de água para o paciente
-      const dailyWaterMap = new Map<string, number>();
-      patientWaterRows.forEach((waterRow) => {
-        const dateKey = startOfDay(
-          new Date(waterRow.get("Date")),
-        ).toISOString();
-        const waterMl = parseFloat(waterRow.get("Water_ml") || "0");
-        dailyWaterMap.set(dateKey, (dailyWaterMap.get(dateKey) || 0) + waterMl);
-      });
-
-      const totalWater = Array.from(dailyWaterMap.values()).reduce(
-        (sum, value) => sum + value,
-        0,
-      );
-      const avgWaterPerDay =
-        dailyWaterMap.size > 0
-          ? Math.round(totalWater / dailyWaterMap.size)
-          : 0;
-
-      return {
-        userId: userId,
-        name: row.get("Name"),
-        calories: parseFloat(row.get("Calories_target") || "0"),
-        protein: parseFloat(row.get("Protein_target") || "0"),
-        avgWaterMl: avgWaterPerDay,
-      };
-    });
-
-    const totalPatients = allPatients.length;
-    const patientIdToNameMap = new Map(
-      allPatients.map((p) => [p.userId, p.name]),
-    );
-    const allMeals: Meal[] = mealRows.map((row) => {
-      const patientId = row.get("User_ID");
-      const patientName =
-        patientIdToNameMap.get(patientId) || "Paciente Desconhecido";
-      return {
-        userId: patientId,
-        patientName,
+      const categoryId = row.get("CategoryID");
+      const categoryName = categoryId ? categoryMap.get(categoryId) : undefined;
+      mealsByUser.get(userId)?.push({
+        userId,
+        patientName: "", // Será preenchido depois com o nome do paciente
         Meal_description: row.get("Meal_description"),
         Calories: parseFloat(row.get("Calories") || "0"),
         carbohydrates: parseFloat(row.get("Carbs") || "0"),
-        protein: parseFloat(row.get("Protein") || "0"),
-        fat: parseFloat(row.get("Fats") || "0"),
+        protein: parseFloat(row.get("Proteins") || "0"), // Corrigido para "Proteins"
+        fat: parseFloat(row.get("Fats") || "0"), // Corrigido para "Fats"
         Date: row.get("Date"),
-      };
+        CategoryName: categoryName,
+      });
+    });
+
+    const waterLogsByUser = new Map<string, WaterLog[]>();
+    waterRows.forEach((row) => {
+      const userId = row.get("User_ID");
+      if (!userId) return;
+      if (!waterLogsByUser.has(userId)) waterLogsByUser.set(userId, []);
+      waterLogsByUser.get(userId)?.push({
+        userId,
+        date: row.get("Date"),
+        waterMl: parseFloat(row.get("Water_ml") || "0"),
+      });
+    });
+
+    const alarmsByUser = new Map<string, Alarm[]>();
+    alarmRows.forEach((row) => {
+      const userId = row.get("user_id"); // Corrigido para "user_id" minúsculo
+      if (!userId) return;
+      if (!alarmsByUser.has(userId)) alarmsByUser.set(userId, []);
+      alarmsByUser.get(userId)?.push({
+        uniqueId: row.get("Unique_ID"),
+        title: row.get("Titulo_Lembrete"),
+        time: row.get("Horario_Fix"),
+        frequencyMinutes: parseInt(row.get("Frequencia_Minutos") || "0", 10),
+        isActive: row.get("Ativo") === "TRUE",
+        lastSent: row.get("Ultimo_Envio"),
+        date: row.get("Date"),
+      });
     });
 
     const timeZone = "America/Sao_Paulo";
-    const today = new Date();
-    const startOfToday = startOfDay(today);
-    const endOfToday = endOfDay(today);
+    const startOfToday = startOfDay(new Date());
+    const endOfToday = endOfDay(new Date());
 
-    const todaysMeals = allMeals.filter((meal) => {
-      const mealDate = toDate(meal.Date, { timeZone });
-      return mealDate >= startOfToday && mealDate <= endOfToday;
+    // 2. Construir o array final de pacientes com todos os dados aninhados
+    const allPatients: Patient[] = patientRows.map((row) => {
+      const userId = row.get("User_ID");
+      const patientMeals = mealsByUser.get(userId) || [];
+      const patientWaterLogs = waterLogsByUser.get(userId) || [];
+      const patientAlarms = alarmsByUser.get(userId) || [];
+
+      // Preenche o nome do paciente nas refeições
+      patientMeals.forEach((meal) => (meal.patientName = row.get("Name")));
+
+      const todaysConsumption = patientMeals
+        .filter((meal) => {
+          const mealDate = toDate(meal.Date, { timeZone });
+          return mealDate >= startOfToday && mealDate <= endOfToday;
+        })
+        .reduce(
+          (acc, meal) => {
+            acc.calories += meal.Calories;
+            acc.protein += meal.protein;
+            return acc;
+          },
+          { calories: 0, protein: 0 },
+        );
+
+      return {
+        userId,
+        name: row.get("Name"),
+        email: row.get("Email"),
+        password: row.get("Password"),
+        createdAt: row.get("CreatedAt"),
+        caloriesTarget: row.get("Calories_target") || "0",
+        proteinTarget: row.get("Protein_target") || "0",
+        carbsTarget: row.get("Carbs_target") || "0",
+        fatTarget: row.get("Fat_target") || "0",
+        height: parseFloat(row.get("Height") || "0"),
+        weight: parseFloat(row.get("Weight") || "0"),
+        imc: parseFloat(row.get("Imc") || "0"),
+        weightTarget: parseFloat(row.get("Weigth_target") || "0"),
+        age: parseInt(row.get("Age") || "0", 10),
+        meals: patientMeals,
+        waterLogs: patientWaterLogs,
+        alarms: patientAlarms,
+        consumedCaloriesToday: todaysConsumption.calories,
+        consumedProteinToday: todaysConsumption.protein,
+      };
     });
 
-    const todaysWaterRows = waterRows.filter((row) => {
-      const waterDate = toDate(row.get("Date"), { timeZone });
-      return waterDate >= startOfToday && waterDate <= endOfToday;
-    });
+    // 3. Calcular totais para o dashboard
+    const allMealsToday = allPatients
+      .flatMap((p) => p.meals)
+      .filter((meal) => {
+        const mealDate = toDate(meal.Date, { timeZone });
+        return mealDate >= startOfToday && mealDate <= endOfToday;
+      });
 
-    const totalMealsToday = todaysMeals.length;
-    const totalWaterToday = todaysWaterRows.reduce(
-      (sum, row) => sum + parseFloat(row.get("Water_ml") || "0"),
+    const allWaterToday = allPatients
+      .flatMap((p) => p.waterLogs)
+      .filter((log) => {
+        const logDate = toDate(log.date, { timeZone });
+        return logDate >= startOfToday && logDate <= endOfToday;
+      });
+
+    const totalWaterToday = allWaterToday.reduce(
+      (sum, log) => sum + log.waterMl,
       0,
     );
 
-    const sortedMeals = [...allMeals].sort(
+    const sortedMeals = [...allPatients.flatMap((p) => p.meals)].sort(
       (a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime(),
     );
-    const latestMeal = sortedMeals.length > 0 ? sortedMeals[0] : null;
-    const recentMeals = sortedMeals.slice(0, 5);
 
     return {
-      totalPatients,
-      totalMealsToday,
+      totalPatients: allPatients.length,
+      totalMealsToday: allMealsToday.length,
       totalWaterToday,
-      latestMeal,
+      latestMeal: sortedMeals.length > 0 ? sortedMeals[0] : null,
       patients: allPatients,
-      recentMeals,
+      recentMeals: sortedMeals.slice(0, 5),
       error: null,
     };
   } catch (err: any) {
@@ -187,8 +263,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       latestMeal: null,
       patients: [],
       recentMeals: [],
-      error:
-        "Falha ao carregar dados da planilha. Verifique a configuração e o console do servidor.",
+      error: "Falha ao carregar dados da planilha.",
     };
   }
 }
@@ -269,13 +344,15 @@ export async function getPatientStats(userId: string) {
   }
 }
 
+export type DietStatus = {
+  text: string;
+  variant: "success" | "warning" | "destructive" | "default";
+};
+
 function calculateDietStatus(
   allMeals: Meal[],
   patientTargets: Patient,
-): {
-  text: string;
-  variant: "success" | "warning" | "destructive" | "default";
-} {
+): DietStatus {
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
 
@@ -309,8 +386,15 @@ function calculateDietStatus(
   const avgCalories = totalAvgCalories / dailyConsumptions.size;
   const avgProtein = totalAvgProtein / dailyConsumptions.size;
 
-  const calRatio = avgCalories / patientTargets.calories;
-  const protRatio = avgProtein / patientTargets.protein;
+  const targetCalories = parseFloat(patientTargets.caloriesTarget) || 0;
+  const targetProtein = parseFloat(patientTargets.proteinTarget) || 0;
+
+  if (targetCalories === 0 || targetProtein === 0) {
+    return { text: "Metas não definidas", variant: "default" };
+  }
+
+  const calRatio = avgCalories / targetCalories;
+  const protRatio = avgProtein / targetProtein;
 
   if (calRatio > 1.15 || protRatio > 1.2) {
     return { text: "Consumo Acima da Meta", variant: "destructive" };
@@ -324,82 +408,148 @@ function calculateDietStatus(
 
 export async function getPatientDetails(userId: string): Promise<{
   patient: Patient | null;
-  allMeals: Meal[];
-  allWaterLogs: WaterLog[];
-  dietStatus: {
-    text: string;
-    variant: "success" | "warning" | "destructive" | "default";
-  };
+  dietStatus: DietStatus;
+  error: string | null;
 }> {
-  const defaultStatus = { text: "Sem dados", variant: "default" as const };
+  const defaultStatus: DietStatus = { text: "Sem dados", variant: "default" };
   try {
     const doc = await getAuthenticatedDoc();
     const patientsSheet = doc.sheetsByTitle["Profile"];
     const mealsSheet = doc.sheetsByTitle["Meals"];
     const waterSheet = doc.sheetsByTitle["Water"];
+    const alarmsSheet = doc.sheetsByTitle["Alarms"];
+    const categoriesSheet = doc.sheetsByTitle["Categories"]; // <-- NOVO
 
-    if (!patientsSheet || !mealsSheet || !waterSheet) {
+    if (
+      !patientsSheet ||
+      !mealsSheet ||
+      !waterSheet ||
+      !alarmsSheet ||
+      !categoriesSheet
+    ) {
+      // <-- NOVO
       throw new Error("Planilhas não encontradas.");
     }
 
-    const [patientRows, mealRows, waterRows] = await Promise.all([
-      patientsSheet.getRows(),
-      mealsSheet.getRows(),
-      waterSheet.getRows(),
-    ]);
+    const [patientRows, mealRows, waterRows, alarmRows, categoryRows] =
+      await Promise.all([
+        // <-- NOVO
+        patientsSheet.getRows(),
+        mealsSheet.getRows(),
+        waterSheet.getRows(),
+        alarmsSheet.getRows(),
+        categoriesSheet.getRows(), // <-- NOVO
+      ]);
 
     const patientRow = patientRows.find((row) => row.get("User_ID") === userId);
     if (!patientRow) {
       return {
         patient: null,
-        allMeals: [],
-        allWaterLogs: [],
         dietStatus: defaultStatus,
+        error: "Paciente não encontrado.",
       };
     }
-    // A interface do paciente é atualizada aqui, mas getPatientDetails não retorna avgWaterMl.
-    // O ideal seria unificar, mas por agora vamos manter como está para não quebrar outras partes.
-    const patient: Omit<Patient, "avgWaterMl"> & {
-      calories: number;
-      protein: number;
-    } = {
-      userId: patientRow.get("User_ID"),
-      name: patientRow.get("Name"),
-      calories: parseFloat(patientRow.get("Calories_target") || "0"),
-      protein: parseFloat(patientRow.get("Protein_target") || "0"),
-    };
 
-    const allMeals: Meal[] = mealRows
+    // NOVO: Criar um mapa de ID da categoria para o nome da categoria para consulta rápida
+    const categoryMap = new Map<string, string>();
+    categoryRows.forEach((row) => {
+      const id = row.get("CategoryID");
+      const name = row.get("CategoryName");
+      if (id && name) {
+        categoryMap.set(id, name);
+      }
+    });
+
+    const patientName = patientRow.get("Name");
+
+    const patientMeals: Meal[] = mealRows
+      .filter((row) => row.get("User_ID") === userId)
+      .map((row) => {
+        // NOVO: Busca o nome da categoria usando o mapa
+        const categoryId = row.get("CategoryID");
+        const categoryName = categoryId
+          ? categoryMap.get(categoryId)
+          : undefined;
+
+        return {
+          userId,
+          patientName,
+          Meal_description: row.get("Meal_description"),
+          Calories: parseFloat(row.get("Calories") || "0"),
+          carbohydrates: parseFloat(row.get("Carbs") || "0"),
+          protein: parseFloat(row.get("Proteins") || "0"),
+          fat: parseFloat(row.get("Fats") || "0"),
+          Date: row.get("Date"),
+          CategoryName: categoryName, // <-- NOVO
+        };
+      });
+
+    // O resto da função permanece o mesmo...
+    const patientWaterLogs: WaterLog[] = waterRows
       .filter((row) => row.get("User_ID") === userId)
       .map((row) => ({
-        userId: row.get("User_ID"),
-        patientName: patient.name,
-        Meal_description: row.get("Meal_description"),
-        Calories: parseFloat(row.get("Calories") || "0"),
-        carbohydrates: parseFloat(row.get("Carbs") || "0"),
-        protein: parseFloat(row.get("Protein") || "0"),
-        fat: parseFloat(row.get("Fats") || "0"),
-        Date: row.get("Date"),
-      }));
-
-    const allWaterLogs: WaterLog[] = waterRows
-      .filter((row) => row.get("User_ID") === userId)
-      .map((row) => ({
-        userId: row.get("User_ID"),
+        userId,
         date: row.get("Date"),
         waterMl: parseFloat(row.get("Water_ml") || "0"),
       }));
 
-    const dietStatus = calculateDietStatus(allMeals, patient);
+    const patientAlarms: Alarm[] = alarmRows
+      .filter((row) => row.get("user_id") === userId)
+      .map((row) => ({
+        uniqueId: row.get("Unique_ID"),
+        title: row.get("Titulo_Lembrete"),
+        time: row.get("Horario_Fix"),
+        frequencyMinutes: parseInt(row.get("Frequencia_Minutos") || "0", 10),
+        isActive: row.get("Ativo") === "TRUE",
+        lastSent: row.get("Ultimo_Envio"),
+        date: row.get("Date"),
+      }));
 
-    return { patient: patient as Patient, allMeals, allWaterLogs, dietStatus };
-  } catch (error) {
+    const timeZone = "America/Sao_Paulo";
+    const todaysConsumption = patientMeals
+      .filter(
+        (meal) => toDate(meal.Date, { timeZone }) >= startOfDay(new Date()),
+      )
+      .reduce(
+        (acc, meal) => {
+          acc.calories += meal.Calories;
+          acc.protein += meal.protein;
+          return acc;
+        },
+        { calories: 0, protein: 0 },
+      );
+
+    const patient: Patient = {
+      userId,
+      name: patientName,
+      email: patientRow.get("Email"),
+      password: patientRow.get("Password"),
+      createdAt: patientRow.get("CreatedAt"),
+      caloriesTarget: patientRow.get("Calories_target") || "0",
+      proteinTarget: patientRow.get("Protein_target") || "0",
+      carbsTarget: patientRow.get("Carbs_target") || "0",
+      fatTarget: patientRow.get("Fat_target") || "0",
+      height: parseFloat(patientRow.get("Height") || "0"),
+      weight: parseFloat(patientRow.get("Weight") || "0"),
+      imc: parseFloat(patientRow.get("Imc") || "0"),
+      weightTarget: parseFloat(patientRow.get("Weight_target") || "0"),
+      age: parseInt(patientRow.get("Age") || "0", 10),
+      meals: patientMeals,
+      waterLogs: patientWaterLogs,
+      alarms: patientAlarms,
+      consumedCaloriesToday: todaysConsumption.calories,
+      consumedProteinToday: todaysConsumption.protein,
+    };
+
+    const dietStatus = calculateDietStatus(patient.meals, patient);
+
+    return { patient, dietStatus, error: null };
+  } catch (error: any) {
     console.error("Erro ao buscar detalhes do paciente:", error);
     return {
       patient: null,
-      allMeals: [],
-      allWaterLogs: [],
       dietStatus: defaultStatus,
+      error: "Falha ao carregar detalhes do paciente.",
     };
   }
 }

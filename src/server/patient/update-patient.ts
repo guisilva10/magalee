@@ -1,29 +1,19 @@
 "use server";
 
-import { JWT } from "google-auth-library";
-import { GoogleSpreadsheet } from "google-spreadsheet";
 import { revalidatePath } from "next/cache";
+import { getAuthenticatedDoc } from "../sheet-data/get-sheet-all-data";
 
-async function getAuthenticatedDoc(): Promise<GoogleSpreadsheet> {
-  const serviceAccountAuth = new JWT({
-    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n"), // Corrige a formatação da chave
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  const doc = new GoogleSpreadsheet(
-    process.env.GOOGLE_SHEET_ID!,
-    serviceAccountAuth,
-  );
-  await doc.loadInfo(); // Carrega as propriedades do documento e as planilhas
-  return doc;
-}
-
-// Interface para os dados que vamos receber do formulário
-interface PatientUpdateData {
+// 1. Define a estrutura de dados que a action espera receber do formulário
+export interface PatientUpdateData {
   name: string;
-  calories: number;
-  protein: number;
+  weight: number;
+  height: number;
+  age: number;
+  caloriesTarget: string;
+  proteinTarget: string;
+  carbsTarget: string;
+  fatTarget: string;
+  weightTarget: number;
 }
 
 export async function updatePatientData(
@@ -31,7 +21,7 @@ export async function updatePatientData(
   data: PatientUpdateData,
 ) {
   try {
-    // 1. Autentica e carrega o documento do Google Sheets
+    // Autentica e carrega o documento do Google Sheets
     const doc = await getAuthenticatedDoc();
     const sheet = doc.sheetsByTitle["Profile"];
 
@@ -39,33 +29,32 @@ export async function updatePatientData(
       throw new Error("Planilha 'Profile' não foi encontrada.");
     }
 
-    // 2. Carrega todas as linhas da planilha
     const rows = await sheet.getRows();
-
-    // 3. Encontra a linha específica do paciente pelo User_ID
     const rowToUpdate = rows.find((row) => row.get("User_ID") === userId);
 
     if (!rowToUpdate) {
       return { success: false, error: "Paciente não encontrado na planilha." };
-    }
+    } // 2. Atualiza todas as colunas com os novos dados do formulário
+    // ATENÇÃO: Os nomes das colunas aqui devem ser IDÊNTICOS aos da sua planilha.
 
-    // 4. Atualiza os valores nas colunas correspondentes
-    //    Certifique-se que os nomes das colunas ("Name", "Calories_target", etc.)
-    //    batem EXATAMENTE com os da sua planilha.
     rowToUpdate.set("Name", data.name);
-    rowToUpdate.set("Calories_target", data.calories);
-    rowToUpdate.set("Protein_target", data.protein);
+    rowToUpdate.set("Weight", data.weight);
+    rowToUpdate.set("Height", data.height);
+    rowToUpdate.set("Age", data.age);
+    rowToUpdate.set("Calories_target", data.caloriesTarget);
+    rowToUpdate.set("Protein_target", data.proteinTarget);
+    rowToUpdate.set("Carbs_target", data.carbsTarget);
+    rowToUpdate.set("Fat_target", data.fatTarget);
+    // Corrigido para corresponder ao nome da coluna na sua planilha
+    rowToUpdate.set("Weigth_target", data.weightTarget); // Salva as alterações
 
-    // 5. Salva as alterações na planilha
-    await rowToUpdate.save();
+    await rowToUpdate.save(); // 3. Limpa o cache para que a página seja recarregada com os novos dados
 
-    // 6. Limpa o cache para que a página seja recarregada com os novos dados
-    revalidatePath("/dashboard/patients"); // Ajuste o caminho se for diferente
+    revalidatePath("/admin/dashboard/patients");
 
     return { success: true, message: "Paciente atualizado com sucesso!" };
   } catch (error) {
     console.error("Erro ao atualizar dados do paciente:", error);
-    // Retorna um objeto de erro genérico para o cliente
     return {
       success: false,
       error: "Falha ao se comunicar com a planilha.",

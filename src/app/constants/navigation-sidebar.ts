@@ -3,7 +3,6 @@ import {
   LifeBuoy,
   Send,
   Settings,
-  TrendingUpIcon,
   Users2Icon,
 } from "lucide-react";
 
@@ -20,11 +19,7 @@ export const data = {
       url: "/admin/dashboard/patients",
       icon: Users2Icon,
     },
-    {
-      title: "Analises",
-      url: "/admin/dashboard/analytics",
-      icon: TrendingUpIcon,
-    },
+
     {
       title: "Categorias",
       url: "/admin/dashboard/category",

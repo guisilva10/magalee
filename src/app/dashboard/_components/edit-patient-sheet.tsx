@@ -34,7 +34,7 @@ interface PatientData {
   imc: number;
   weightTarget: number; // Tipo corrigido de string para number
   age: number;
-  imgTarget: number;
+  imcTarget: number;
   carbsTarget: string;
   fatTarget: string;
 }

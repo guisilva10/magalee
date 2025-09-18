@@ -24,35 +24,26 @@ import {
   FormMessage,
 } from "@/app/_components/ui/form";
 import { Input } from "@/app/_components/ui/input";
-import { Textarea } from "@/app/_components/ui/textarea";
-import { updateCategory } from "@/server/category/edit-category";
-
-// A tipagem dos dados que vêm do componente pai
-interface CategoryData {
-  CategoryID: string;
-  CategoryName: string;
-  Description: string;
-}
+import { Textarea } from "@/app/_components/ui/textarea"; // Usar Textarea para descrição
+import { createCategory } from "@/server/category/create-category";
 
 // Validação do formulário com Zod
 const formSchema = z.object({
-  categoryName: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
+  categoryName: z
+    .string()
+    .min(2, { message: "O nome deve ter pelo menos 2 caracteres." }),
   description: z.string().optional(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
 
-interface EditCategoryDialogProps {
+interface CategoryDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  category: CategoryData | null; // Recebe o objeto completo da categoria para editar
+  // Futuramente, você pode adicionar 'initialData' para o modo de edição
 }
 
-export function EditCategoryDialog({
-  isOpen,
-  onOpenChange,
-  category,
-}: EditCategoryDialogProps) {
+export function CategoryDialog({ isOpen, onOpenChange }: CategoryDialogProps) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<FormSchema>({
@@ -63,25 +54,20 @@ export function EditCategoryDialog({
     },
   });
 
-  // Efeito para preencher o formulário quando uma categoria é selecionada
+  // Limpa o formulário quando o modal é fechado
   useEffect(() => {
-    if (category) {
-      form.reset({
-        categoryName: category.CategoryName,
-        description: category.Description,
-      });
+    if (!isOpen) {
+      form.reset();
     }
-  }, [category, form]);
+  }, [isOpen, form]);
 
   const onSubmit = (values: FormSchema) => {
-    if (!category) return;
-
     startTransition(async () => {
-      const result = await updateCategory(category.CategoryID, values);
+      const result = await createCategory(values);
 
       if (result.success) {
         toast.success(result.message);
-        onOpenChange(false); // Fecha o modal
+        onOpenChange(false); // Fecha o modal em caso de sucesso
       } else {
         toast.error(result.error);
       }
@@ -92,9 +78,9 @@ export function EditCategoryDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Editar Categoria</DialogTitle>
+          <DialogTitle>Nova Categoria</DialogTitle>
           <DialogDescription>
-            Altere os detalhes da categoria "{category?.CategoryName}".
+            Crie uma nova categoria para organizar as refeições dos pacientes.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -123,7 +109,7 @@ export function EditCategoryDialog({
                   <FormLabel>Descrição (Opcional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Ex: Primeira refeição do dia..."
+                      placeholder="Ex: Primeira refeição do dia, focada em carboidratos e proteínas."
                       {...field}
                     />
                   </FormControl>
@@ -133,7 +119,7 @@ export function EditCategoryDialog({
             />
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Salvando..." : "Salvar Alterações"}
+                {isPending ? "Criando..." : "Criar Categoria"}
               </Button>
             </DialogFooter>
           </form>

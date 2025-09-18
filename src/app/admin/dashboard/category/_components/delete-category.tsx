@@ -10,11 +10,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/_components/ui/alert-dialog";
+import { Button, buttonVariants } from "@/app/_components/ui/button";
 
 interface DeleteCategoryAlertProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  categoryName: string | null;
+  categoryName?: string | null;
   onConfirm: () => void;
   isPending: boolean;
 }
@@ -32,22 +33,22 @@ export function DeleteCategoryAlert({
         <AlertDialogHeader>
           <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta ação é irreversível. Todas as{" "}
-            <span className="font-bold text-red-600">
-              refeições registradas
-            </span>{" "}
-            na categoria &quot;{categoryName}&quot; serão permanentemente
-            excluídas.
+            Essa ação não pode ser desfeita. Isso excluirá permanentemente a
+            categoria{" "}
+            <span className="text-destructive font-semibold">
+              "{categoryName}"
+            </span>
+            . Todas as refeições associadas a ela perderão essa categorização.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
+            className={buttonVariants({ variant: "destructive" })}
             onClick={onConfirm}
             disabled={isPending}
-            className="bg-red-600 hover:bg-red-700"
           >
-            {isPending ? "Excluindo..." : "Sim, excluir tudo"}
+            {isPending ? "Excluindo..." : "Sim, excluir categoria"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
